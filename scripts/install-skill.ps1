@@ -1,5 +1,5 @@
 param(
-  [string]$Repo = "sunbaozhu/ai-editable-html",
+  [string]$Repo = "judadechunniunai/ai-editable-html",
   [string]$Ref = "main",
   [ValidateSet("codex", "cursor", "both")]
   [string]$Target = "codex",

@@ -39,13 +39,13 @@ After this repo is published, install directly from GitHub with one command.
 PowerShell:
 
 ```powershell
-$repo="sunbaozhu/ai-editable-html"; $s="$env:TEMP\install-ai-editable-html.ps1"; iwr -UseB "https://raw.githubusercontent.com/$repo/main/scripts/install-skill.ps1" -OutFile $s; powershell -ExecutionPolicy Bypass -File $s -Repo $repo -Target codex
+$repo="judadechunniunai/ai-editable-html"; $s="$env:TEMP\install-ai-editable-html.ps1"; iwr -UseB "https://raw.githubusercontent.com/$repo/main/scripts/install-skill.ps1" -OutFile $s; powershell -ExecutionPolicy Bypass -File $s -Repo $repo -Target codex
 ```
 
 macOS/Linux:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/sunbaozhu/ai-editable-html/main/scripts/install-skill.sh | bash -s -- sunbaozhu/ai-editable-html codex
+curl -fsSL https://raw.githubusercontent.com/judadechunniunai/ai-editable-html/main/scripts/install-skill.sh | bash -s -- judadechunniunai/ai-editable-html codex
 ```
 
 ## Install The Cursor Rule
@@ -53,7 +53,7 @@ curl -fsSL https://raw.githubusercontent.com/sunbaozhu/ai-editable-html/main/scr
 From inside the Cursor project where you want the rule:
 
 ```powershell
-$repo="sunbaozhu/ai-editable-html"; $s="$env:TEMP\install-ai-editable-html.ps1"; iwr -UseB "https://raw.githubusercontent.com/$repo/main/scripts/install-skill.ps1" -OutFile $s; powershell -ExecutionPolicy Bypass -File $s -Repo $repo -Target cursor -CursorProject .
+$repo="judadechunniunai/ai-editable-html"; $s="$env:TEMP\install-ai-editable-html.ps1"; iwr -UseB "https://raw.githubusercontent.com/$repo/main/scripts/install-skill.ps1" -OutFile $s; powershell -ExecutionPolicy Bypass -File $s -Repo $repo -Target cursor -CursorProject .
 ```
 
 Or install both Codex and Cursor support:
@@ -78,7 +78,7 @@ After logging in with GitHub CLI:
 
 ```powershell
 gh auth login
-.\scripts\publish-github.ps1 -Repo sunbaozhu/ai-editable-html -Visibility public
+.\scripts\publish-github.ps1 -Repo judadechunniunai/ai-editable-html -Visibility public
 ```
 
 ## Usage

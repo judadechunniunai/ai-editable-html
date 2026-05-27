@@ -1,5 +1,5 @@
 param(
-  [string]$Repo = "sunbaozhu/ai-editable-html",
+  [string]$Repo = "judadechunniunai/ai-editable-html",
   [ValidateSet("public", "private", "internal")]
   [string]$Visibility = "public"
 )

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-repo="${1:-sunbaozhu/ai-editable-html}"
+repo="${1:-judadechunniunai/ai-editable-html}"
 target="${2:-codex}"
 ref="${3:-main}"
 cursor_project="${4:-$PWD}"
