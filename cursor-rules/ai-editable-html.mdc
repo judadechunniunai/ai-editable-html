@@ -1,0 +1,47 @@
+---
+description: Generate AI Editable HTML pages that can be locally edited by the browser extension.
+globs: ["*.html"]
+alwaysApply: false
+---
+
+When generating standalone HTML intended for local editing, use the `ai-editable-html-v1` protocol.
+
+Requirements:
+
+- Add `data-ai-editable-html="v1"` to the `<html>` element.
+- Include one `<script id="ai-editable-html-model" type="application/json">` model.
+- Add stable `data-edit-id` attributes to editable text elements.
+- Add stable `data-flow-id` attributes to editable flow containers.
+- Store flowchart nodes and edges in the JSON model.
+- Use plain text labels and stable lower_snake_case IDs.
+- Do not render editable flows only as static SVG or canvas.
+- Include or inline the v1 runtime when the page contains flow blocks.
+
+Text block shape:
+
+```json
+{
+  "id": "page_title",
+  "type": "text",
+  "selector": "[data-edit-id='page_title']",
+  "content": "Editable title"
+}
+```
+
+Flow block shape:
+
+```json
+{
+  "id": "main_flow",
+  "type": "flow",
+  "selector": "[data-flow-id='main_flow']",
+  "nodes": [
+    { "id": "start", "label": "Start", "x": 40, "y": 80, "width": 140, "height": 56 }
+  ],
+  "edges": [
+    { "id": "start_to_next", "source": "start", "target": "next", "label": "" }
+  ]
+}
+```
+
+Before returning HTML, verify that the model parses as JSON, selectors resolve, and every edge references existing node IDs.

@@ -1,0 +1,111 @@
+.aieh-toolbar {
+  position: fixed;
+  z-index: 2147483647;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid rgba(15, 23, 42, .16);
+  border-radius: 8px;
+  background: #ffffff;
+  color: #172033;
+  box-shadow: 0 12px 34px rgba(15, 23, 42, .18);
+  font: 13px/1.2 system-ui, -apple-system, Segoe UI, sans-serif;
+}
+
+.aieh-toolbar button,
+.aieh-toolbar select {
+  height: 30px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #f8fafc;
+  color: #172033;
+  font: inherit;
+}
+
+.aieh-toolbar button {
+  padding: 0 10px;
+  cursor: pointer;
+}
+
+.aieh-toolbar button.is-active {
+  border-color: #2563eb;
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.aieh-editable-text {
+  outline: 2px dashed rgba(37, 99, 235, .35);
+  outline-offset: 3px;
+}
+
+.aieh-editable-text:focus {
+  outline-color: rgba(37, 99, 235, .85);
+}
+
+.aieh-flow-editor {
+  position: relative;
+  min-height: 240px;
+  overflow: hidden;
+  user-select: none;
+}
+
+.aieh-flow-editor .aieh-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.aieh-flow-editor .aieh-lines line {
+  pointer-events: stroke;
+  stroke: #64748b;
+  stroke-width: 2;
+}
+
+.aieh-flow-editor .aieh-lines line:hover {
+  stroke: #dc2626;
+  stroke-width: 4;
+}
+
+.aieh-node {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  border: 1px solid #94a3b8;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #172033;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, .08);
+  cursor: grab;
+  font: 600 14px/1.2 system-ui, -apple-system, Segoe UI, sans-serif;
+}
+
+.aieh-node:active {
+  cursor: grabbing;
+}
+
+.aieh-node.is-link-source {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .2);
+}
+
+.aieh-toast {
+  position: fixed;
+  z-index: 2147483647;
+  right: 16px;
+  top: 66px;
+  max-width: 320px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #172033;
+  color: #ffffff;
+  box-shadow: 0 12px 34px rgba(15, 23, 42, .2);
+  font: 13px/1.4 system-ui, -apple-system, Segoe UI, sans-serif;
+}

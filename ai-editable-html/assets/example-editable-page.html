@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en" data-ai-editable-html="v1">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Editable Launch Flow</title>
+  <style>
+    body { margin: 0; font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif; color: #172033; background: #f5f7fb; }
+    main { max-width: 960px; margin: 0 auto; padding: 48px 24px; }
+    h1 { margin: 0 0 12px; font-size: 44px; line-height: 1.05; }
+    p { max-width: 680px; color: #526070; font-size: 18px; line-height: 1.6; }
+    .flow-card { margin-top: 32px; }
+    .ai-flow { height: 360px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1 data-edit-id="page_title">Editable launch flow</h1>
+    <p data-edit-id="intro_text">This page can be locally adjusted without asking an AI model to regenerate the entire HTML file.</p>
+    <section class="flow-card">
+      <div data-flow-id="launch_flow" class="ai-flow"></div>
+    </section>
+  </main>
+
+  <script id="ai-editable-html-model" type="application/json">
+{
+  "version": "1",
+  "title": "Editable Launch Flow",
+  "blocks": [
+    {
+      "id": "page_title",
+      "type": "text",
+      "selector": "[data-edit-id='page_title']",
+      "content": "Editable launch flow"
+    },
+    {
+      "id": "intro_text",
+      "type": "text",
+      "selector": "[data-edit-id='intro_text']",
+      "content": "This page can be locally adjusted without asking an AI model to regenerate the entire HTML file."
+    },
+    {
+      "id": "launch_flow",
+      "type": "flow",
+      "selector": "[data-flow-id='launch_flow']",
+      "nodes": [
+        { "id": "brief", "label": "Brief", "x": 48, "y": 140, "width": 140, "height": 58 },
+        { "id": "draft", "label": "Draft", "x": 268, "y": 76, "width": 140, "height": 58 },
+        { "id": "review", "label": "Review", "x": 268, "y": 204, "width": 140, "height": 58 },
+        { "id": "ship", "label": "Ship", "x": 488, "y": 140, "width": 140, "height": 58 }
+      ],
+      "edges": [
+        { "id": "brief_to_draft", "source": "brief", "target": "draft", "label": "" },
+        { "id": "brief_to_review", "source": "brief", "target": "review", "label": "" },
+        { "id": "draft_to_ship", "source": "draft", "target": "ship", "label": "" },
+        { "id": "review_to_ship", "source": "review", "target": "ship", "label": "" }
+      ]
+    }
+  ]
+}
+  </script>
+  <script src="runtime-v1.js"></script>
+</body>
+</html>

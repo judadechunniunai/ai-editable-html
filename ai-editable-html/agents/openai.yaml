@@ -1,0 +1,3 @@
+display_name: AI Editable HTML
+short_description: Generate locally editable HTML pages.
+default_prompt: Generate an editable single-file HTML page using the ai-editable-html-v1 protocol.
