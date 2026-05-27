@@ -16,10 +16,13 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 $repoExists = $true
+$previousErrorActionPreference = $ErrorActionPreference
+$ErrorActionPreference = "Continue"
 gh repo view $Repo *> $null
 if ($LASTEXITCODE -ne 0) {
   $repoExists = $false
 }
+$ErrorActionPreference = $previousErrorActionPreference
 
 if ($repoExists) {
   if (!(git remote get-url origin 2>$null)) {
