@@ -115,6 +115,46 @@
       border-radius: 6px;
     }
 
+    .description {
+      margin-top: 30px;
+      padding: 30px;
+      border-radius: 16px;
+      background: #fff;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, .2);
+    }
+
+    .description h2 {
+      margin: 0 0 20px;
+      color: #1e293b;
+      font-size: 1.5rem;
+      font-weight: 700;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 12px;
+    }
+
+    .description p {
+      margin: 0 0 16px;
+      color: #475569;
+      line-height: 1.8;
+      font-size: 15px;
+    }
+
+    .description ol {
+      margin: 0 0 16px;
+      padding-left: 24px;
+    }
+
+    .description li {
+      margin-bottom: 12px;
+      color: #475569;
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    .description strong {
+      color: #1e293b;
+    }
+
     @media (max-width: 760px) {
       body { padding: 24px 12px; }
       h1 { font-size: 2rem; }
@@ -124,7 +164,7 @@
 </head>
 <body>
   <main class="container">
-    <h1 data-edit-id="page_title">&#22238;&#23478;&#27969;&#31243;</h1>
+    <h1 data-edit-id="page_title">电脑游戏流程</h1>
 
     <section class="flow-wrap">
       <div data-flow-id="home_flow" class="ai-flow"></div>
@@ -148,36 +188,51 @@
         <span>&#32467;&#26463;</span>
       </div>
     </div>
+
+    <section class="description">
+      <h2 data-edit-id="desc_title">流程说明</h2>
+      <div data-edit-id="desc_content">
+        <p>这是一个电脑游戏流程示意图，展示了从打开电脑到开始玩游戏的完整过程。</p>
+        <ol>
+          <li><strong>打开电脑：</strong>这是流程的起点，表示启动计算机设备。</li>
+          <li><strong>判断是否有游戏：</strong>这是一个决策节点，需要检查电脑中是否已经安装了游戏。</li>
+          <li><strong>启动游戏：</strong>如果电脑中已有游戏，直接启动并开始游玩。</li>
+          <li><strong>打开网页下载游戏：</strong>如果电脑中没有游戏，则需要打开浏览器下载一个游戏。</li>
+          <li><strong>开始玩游戏：</strong>无论从哪个路径过来，最终都是开始享受游戏的乐趣。</li>
+        </ol>
+        <p>这个流程图展示了常见的电脑使用流程，体现了条件判断在日常操作中的应用。无论电脑中是否已有游戏，最终的目标都是开始玩游戏。</p>
+      </div>
+    </section>
   </main>
 
   <script id="ai-editable-html-model" type="application/json">
 {
   "version": "1",
-  "title": "\u56de\u5bb6\u6d41\u7a0b\u56fe",
+  "title": "\u7535\u8111\u6e38\u620f\u6d41\u7a0b\u56fe",
   "blocks": [
     {
       "id": "page_title",
       "type": "text",
       "selector": "[data-edit-id='page_title']",
-      "content": "\u56de\u5bb6\u6d41\u7a0b"
+      "content": "\u7535\u8111\u6e38\u620f\u6d41\u7a0b"
     },
     {
       "id": "home_flow",
       "type": "flow",
       "selector": "[data-flow-id='home_flow']",
       "nodes": [
-        { "id": "enter_home", "label": "\u8fdb\u5165\u5bb6\u95e8", "x": 430, "y": 42, "width": 150, "height": 58, "type": "start" },
-        { "id": "has_slippers", "label": "\u95e8\u53e3\u6709\u62d6\u978b\u5417\uff1f", "x": 402, "y": 154, "width": 206, "height": 150, "type": "decision" },
-        { "id": "wear_slippers", "label": "\u7a7f\u4e0a\u95e8\u53e3\u7684\u62d6\u978b", "x": 96, "y": 360, "width": 190, "height": 60, "type": "action" },
-        { "id": "find_slippers", "label": "\u53bb\u978b\u67dc\u627e\u4e00\u53cc\u62d6\u978b\u7a7f", "x": 704, "y": 360, "width": 220, "height": 60, "type": "action" },
-        { "id": "go_sofa", "label": "\u53bb\u6c99\u53d1\u4e0a\u8eba\u7740", "x": 424, "y": 468, "width": 180, "height": 60, "type": "end" }
+        { "id": "turn_on_pc", "label": "\u6253\u5f00\u7535\u8111", "x": 430, "y": 42, "width": 150, "height": 58, "type": "start" },
+        { "id": "has_game", "label": "\u7535\u8111\u6709\u6e38\u620f\u5417\uff1f", "x": 402, "y": 154, "width": 206, "height": 150, "type": "decision" },
+        { "id": "start_game", "label": "\u542f\u52a8\u6e38\u620f", "x": 96, "y": 360, "width": 150, "height": 60, "type": "action" },
+        { "id": "download_game", "label": "\u6253\u5f00\u7f51\u9875\u4e0b\u8f7d\u6e38\u620f", "x": 704, "y": 360, "width": 220, "height": 60, "type": "action" },
+        { "id": "play_game", "label": "\u5f00\u59cb\u73a9\u6e38\u620f", "x": 424, "y": 468, "width": 180, "height": 60, "type": "end" }
       ],
       "edges": [
-        { "id": "enter_to_decision", "source": "enter_home", "target": "has_slippers", "label": "" },
-        { "id": "yes_to_wear", "source": "has_slippers", "target": "wear_slippers", "label": "\u662f" },
-        { "id": "no_to_find", "source": "has_slippers", "target": "find_slippers", "label": "\u5426" },
-        { "id": "wear_to_sofa", "source": "wear_slippers", "target": "go_sofa", "label": "" },
-        { "id": "find_to_sofa", "source": "find_slippers", "target": "go_sofa", "label": "" }
+        { "id": "start_to_decision", "source": "turn_on_pc", "target": "has_game", "label": "" },
+        { "id": "yes_to_start", "source": "has_game", "target": "start_game", "label": "\u662f" },
+        { "id": "no_to_download", "source": "has_game", "target": "download_game", "label": "\u5426" },
+        { "id": "start_to_play", "source": "start_game", "target": "play_game", "label": "" },
+        { "id": "download_to_play", "source": "download_game", "target": "play_game", "label": "" }
       ]
     }
   ]

@@ -25,6 +25,7 @@ Always produce one complete HTML document. The document must:
 ```
 
 - Give every editable text element a stable `data-edit-id`.
+- Add every `data-edit-id` element to the JSON model. Include body copy, captions, lists, and explanatory sections, not only headings.
 - Give every editable flow container a stable `data-flow-id`.
 - Keep flowchart data in the JSON model, not only in SVG or canvas.
 - Include the runtime from `assets/runtime-v1.js` inline before `</body>` when the page contains a flow block.
@@ -40,6 +41,7 @@ For every user-facing text that should be directly editable, add a text block:
   "id": "hero_title",
   "type": "text",
   "selector": "[data-edit-id='hero_title']",
+  "format": "text",
   "content": "Quarterly launch plan"
 }
 ```
@@ -51,6 +53,18 @@ The DOM content should match `content`:
 ```
 
 Use stable lower_snake_case IDs. Do not use generated random IDs.
+
+For editable rich text containers, preserve markup with `format: "html"`:
+
+```json
+{
+  "id": "details",
+  "type": "text",
+  "selector": "[data-edit-id='details']",
+  "format": "html",
+  "content": "<p>Editable paragraph.</p><ol><li>Editable list item.</li></ol>"
+}
+```
 
 ## Editable Flow Blocks
 
@@ -89,6 +103,8 @@ Optional node `type` values can be used for styling:
 - `end`
 
 Style these through `.ai-flow-node-start`, `.ai-flow-node-decision`, `.ai-flow-node-action`, and `.ai-flow-node-end`. The extension reuses these classes while editing.
+
+Edge labels are directly editable in the browser extension. Use an empty string when a label is not needed yet; the extension can fill it later.
 
 ## Styling Guidance
 

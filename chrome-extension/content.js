@@ -10,7 +10,8 @@
     model: null,
     selectedFlowId: "",
     mode: "select",
-    linkSource: null
+    linkSource: null,
+    nodeType: "action"
   };
 
   function parseModel() {
@@ -24,6 +25,28 @@
 
   function writeModel() {
     modelEl.textContent = "\n" + JSON.stringify(state.model, null, 2) + "\n";
+  }
+
+  function ensureTextBlocksFromDom() {
+    if (!state.model || !Array.isArray(state.model.blocks)) return;
+    var known = {};
+    state.model.blocks.forEach(function (block) {
+      if (block.id) known[block.id] = true;
+    });
+
+    document.querySelectorAll("[data-edit-id]").forEach(function (el) {
+      var id = el.getAttribute("data-edit-id");
+      if (!id || known[id]) return;
+      state.model.blocks.push({
+        id: id,
+        type: "text",
+        selector: "[data-edit-id='" + id.replace(/'/g, "\\'") + "']",
+        format: el.children.length ? "html" : "text",
+        content: el.children.length ? el.innerHTML : el.textContent
+      });
+      known[id] = true;
+    });
+    writeModel();
   }
 
   function blocks(type) {
@@ -81,8 +104,11 @@
       el.classList.add("aieh-editable-text");
       el.setAttribute("contenteditable", "true");
       el.setAttribute("spellcheck", "true");
+      if (block.format === "html" && block.content && el.innerHTML.trim() !== String(block.content).trim()) {
+        el.innerHTML = block.content;
+      }
       el.addEventListener("input", function () {
-        block.content = el.textContent;
+        block.content = block.format === "html" ? el.innerHTML : el.textContent;
         writeModel();
       });
     });
@@ -133,15 +159,30 @@
         }
       });
       svg.appendChild(line);
-      if (edge.label) {
-        var label = document.createElement("div");
-        label.className = "aieh-edge-label ai-flow-edge-label";
-        label.dataset.edgeId = edge.id;
-        label.textContent = edge.label;
-        label.style.left = ((a.x + b.x) / 2) + "px";
-        label.style.top = ((a.y + b.y) / 2) + "px";
-        container.appendChild(label);
-      }
+      var label = document.createElement("div");
+      label.className = "aieh-edge-label ai-flow-edge-label" + (edge.label ? "" : " is-empty");
+      label.dataset.edgeId = edge.id;
+      label.textContent = edge.label || "";
+      label.setAttribute("contenteditable", "true");
+      label.setAttribute("spellcheck", "true");
+      label.style.left = ((a.x + b.x) / 2) + "px";
+      label.style.top = ((a.y + b.y) / 2) + "px";
+      label.addEventListener("input", function () {
+        edge.label = label.textContent;
+        label.classList.toggle("is-empty", !edge.label);
+        writeModel();
+      });
+      label.addEventListener("focus", function () {
+        label.classList.add("aieh-editing-inline");
+      });
+      label.addEventListener("blur", function () {
+        label.classList.remove("aieh-editing-inline");
+        label.classList.toggle("is-empty", !label.textContent);
+      });
+      label.addEventListener("click", function (event) {
+        event.stopPropagation();
+      });
+      container.appendChild(label);
     });
 
     nodes.forEach(function (node) {
@@ -149,19 +190,25 @@
       el.className = "aieh-node ai-flow-node ai-flow-node-" + safeClass(node.type);
       el.dataset.nodeId = node.id;
       el.textContent = node.label || node.id;
+      el.setAttribute("contenteditable", "true");
+      el.setAttribute("spellcheck", "true");
       el.style.left = Number(node.x || 0) + "px";
       el.style.top = Number(node.y || 0) + "px";
       el.style.width = Number(node.width || 140) + "px";
       el.style.height = Number(node.height || 56) + "px";
       if (state.linkSource === node.id) el.classList.add("is-link-source");
 
-      el.addEventListener("dblclick", function (event) {
-        event.stopPropagation();
-        var label = prompt("Node label", node.label || node.id);
-        if (label == null) return;
-        node.label = label;
+      el.addEventListener("input", function () {
+        node.label = el.textContent;
         writeModel();
-        renderFlow(flow);
+      });
+
+      el.addEventListener("focus", function () {
+        el.classList.add("aieh-editing-inline");
+      });
+
+      el.addEventListener("blur", function () {
+        el.classList.remove("aieh-editing-inline");
       });
 
       el.addEventListener("click", function (event) {
@@ -179,14 +226,19 @@
 
       el.addEventListener("pointerdown", function (event) {
         if (state.mode !== "select") return;
-        event.preventDefault();
         el.setPointerCapture(event.pointerId);
         var startX = event.clientX;
         var startY = event.clientY;
         var baseX = Number(node.x || 0);
         var baseY = Number(node.y || 0);
+        var dragging = false;
 
         function move(moveEvent) {
+          var dx = moveEvent.clientX - startX;
+          var dy = moveEvent.clientY - startY;
+          if (!dragging && Math.sqrt(dx * dx + dy * dy) < 4) return;
+          dragging = true;
+          moveEvent.preventDefault();
           node.x = Math.round(baseX + moveEvent.clientX - startX);
           node.y = Math.round(baseY + moveEvent.clientY - startY);
           el.style.left = node.x + "px";
@@ -197,7 +249,7 @@
         function up() {
           el.removeEventListener("pointermove", move);
           el.removeEventListener("pointerup", up);
-          writeModel();
+          if (dragging) writeModel();
         }
 
         el.addEventListener("pointermove", move);
@@ -251,7 +303,21 @@
     if (!flow) return;
     flow.nodes = Array.isArray(flow.nodes) ? flow.nodes : [];
     var id = makeId("node", flow.nodes);
-    flow.nodes.push({ id: id, label: "New node", x: 48, y: 48, width: 140, height: 56 });
+    var dimensions = {
+      start: { width: 150, height: 58 },
+      decision: { width: 190, height: 140 },
+      action: { width: 160, height: 60 },
+      end: { width: 160, height: 60 }
+    }[state.nodeType] || { width: 160, height: 60 };
+    flow.nodes.push({
+      id: id,
+      label: "New " + state.nodeType,
+      x: 48,
+      y: 48,
+      width: dimensions.width,
+      height: dimensions.height,
+      type: state.nodeType
+    });
     writeModel();
     renderFlow(flow);
   }
@@ -285,6 +351,9 @@
     var toolbar = document.createElement("div");
     toolbar.className = "aieh-toolbar";
 
+    var flowGroup = document.createElement("div");
+    flowGroup.className = "aieh-toolbar-group";
+
     var select = document.createElement("select");
     flows.forEach(function (flow) {
       var option = document.createElement("option");
@@ -295,21 +364,46 @@
     select.addEventListener("change", function () {
       state.selectedFlowId = select.value;
     });
-    toolbar.appendChild(select);
+    flowGroup.appendChild(select);
+    toolbar.appendChild(flowGroup);
 
+    var modeGroup = document.createElement("div");
+    modeGroup.className = "aieh-toolbar-group";
     [["select", "Move"], ["edge", "Edge"], ["delete", "Delete"]].forEach(function (entry) {
       var button = document.createElement("button");
       button.className = "aieh-mode";
       button.dataset.mode = entry[0];
       button.textContent = entry[1];
       button.addEventListener("click", function () { setMode(entry[0]); });
-      toolbar.appendChild(button);
+      modeGroup.appendChild(button);
     });
+    toolbar.appendChild(modeGroup);
+
+    var addGroup = document.createElement("div");
+    addGroup.className = "aieh-toolbar-group";
+
+    var typeSelect = document.createElement("select");
+    [
+      ["action", "Action"],
+      ["decision", "Decision"],
+      ["start", "Start"],
+      ["end", "End"]
+    ].forEach(function (entry) {
+      var option = document.createElement("option");
+      option.value = entry[0];
+      option.textContent = entry[1];
+      typeSelect.appendChild(option);
+    });
+    typeSelect.addEventListener("change", function () {
+      state.nodeType = typeSelect.value;
+    });
+    addGroup.appendChild(typeSelect);
 
     var add = document.createElement("button");
     add.textContent = "Add node";
     add.addEventListener("click", addNode);
-    toolbar.appendChild(add);
+    addGroup.appendChild(add);
+    toolbar.appendChild(addGroup);
 
     var save = document.createElement("button");
     save.textContent = "Download";
@@ -322,6 +416,7 @@
 
   parseModel();
   if (!state.model) return;
+  ensureTextBlocksFromDom();
   initTextEditing();
   renderAllFlows();
   buildToolbar();

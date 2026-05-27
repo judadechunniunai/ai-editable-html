@@ -15,6 +15,12 @@
   font: 13px/1.2 system-ui, -apple-system, Segoe UI, sans-serif;
 }
 
+.aieh-toolbar-group {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
 .aieh-toolbar button,
 .aieh-toolbar select {
   height: 30px;
@@ -45,6 +51,12 @@
   outline-color: rgba(37, 99, 235, .85);
 }
 
+.aieh-editing-inline {
+  cursor: text !important;
+  outline: 2px solid rgba(37, 99, 235, .75);
+  outline-offset: 2px;
+}
+
 .aieh-flow-editor {
   position: relative;
   min-height: 240px;
@@ -70,7 +82,18 @@
 }
 
 .aieh-edge-label {
-  pointer-events: none;
+  cursor: text;
+  min-width: 18px;
+  min-height: 18px;
+}
+
+.aieh-edge-label.is-empty {
+  opacity: .35;
+  border: 1px dashed rgba(100, 116, 139, .65);
+}
+
+.aieh-edge-label.is-empty::before {
+  content: "+";
 }
 
 .aieh-node {

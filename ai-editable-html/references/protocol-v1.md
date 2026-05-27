@@ -19,6 +19,7 @@ Supported block types are `text` and `flow`.
   "id": "summary_text",
   "type": "text",
   "selector": "[data-edit-id='summary_text']",
+  "format": "text",
   "content": "Editable text"
 }
 ```
@@ -27,7 +28,9 @@ Rules:
 
 - `id` is stable and unique.
 - `selector` should prefer `data-edit-id`.
-- `content` stores plain text. Rich text is not supported in v1.
+- `format` is optional and defaults to `text`.
+- With `format: "text"`, `content` stores plain text.
+- With `format: "html"`, `content` stores `innerHTML` for editable rich text containers.
 
 ## Flow Block
 
@@ -65,6 +68,7 @@ Rules:
 - Edges must reference existing node IDs.
 - Coordinates are pixels relative to the flow container.
 - Node labels are plain text.
+- Edge labels are plain text and can be empty. Empty labels can be filled by the browser extension.
 - Node `type` is optional. Recommended values are `start`, `decision`, `action`, and `end`.
 - Renderers should add `.ai-flow-node-${type}` classes when `type` is present.
 
@@ -72,7 +76,8 @@ Rules:
 
 The browser extension is allowed to:
 
-- Update text element `textContent` and its matching text block `content`.
+- Update text element `textContent` or `innerHTML` and its matching text block `content`.
+- Update flow node labels and edge labels directly from inline edits.
 - Update flow node `x` and `y`.
 - Add or delete flow nodes.
 - Add or delete flow edges.
