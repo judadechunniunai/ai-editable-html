@@ -107,7 +107,7 @@
     container.innerHTML = "";
 
     var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("class", "aieh-lines");
+    svg.setAttribute("class", "ai-flow-lines aieh-lines");
     svg.setAttribute("viewBox", "0 0 " + width + " " + height);
     svg.setAttribute("preserveAspectRatio", "none");
     container.appendChild(svg);
