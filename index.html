@@ -3,11 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>回家流程图</title>
+  <title>&#22238;&#23478;&#27969;&#31243;&#22270;</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -118,23 +116,15 @@
     }
 
     @media (max-width: 760px) {
-      body {
-        padding: 24px 12px;
-      }
-
-      h1 {
-        font-size: 2rem;
-      }
-
-      .flow-wrap {
-        padding: 18px;
-      }
+      body { padding: 24px 12px; }
+      h1 { font-size: 2rem; }
+      .flow-wrap { padding: 18px; }
     }
   </style>
 </head>
 <body>
   <main class="container">
-    <h1 data-edit-id="page_title">回家流程</h1>
+    <h1 data-edit-id="page_title">&#22238;&#23478;&#27969;&#31243;</h1>
 
     <section class="flow-wrap">
       <div data-flow-id="home_flow" class="ai-flow"></div>
@@ -143,19 +133,19 @@
     <div class="legend">
       <div class="legend-item">
         <div class="legend-color ai-flow-node-start"></div>
-        <span>开始</span>
+        <span>&#24320;&#22987;</span>
       </div>
       <div class="legend-item">
         <div class="legend-color ai-flow-node-decision"></div>
-        <span>判断</span>
+        <span>&#21028;&#26029;</span>
       </div>
       <div class="legend-item">
         <div class="legend-color ai-flow-node-action"></div>
-        <span>操作</span>
+        <span>&#25805;&#20316;</span>
       </div>
       <div class="legend-item">
         <div class="legend-color ai-flow-node-end"></div>
-        <span>结束</span>
+        <span>&#32467;&#26463;</span>
       </div>
     </div>
   </main>
@@ -163,29 +153,29 @@
   <script id="ai-editable-html-model" type="application/json">
 {
   "version": "1",
-  "title": "回家流程图",
+  "title": "\u56de\u5bb6\u6d41\u7a0b\u56fe",
   "blocks": [
     {
       "id": "page_title",
       "type": "text",
       "selector": "[data-edit-id='page_title']",
-      "content": "回家流程"
+      "content": "\u56de\u5bb6\u6d41\u7a0b"
     },
     {
       "id": "home_flow",
       "type": "flow",
       "selector": "[data-flow-id='home_flow']",
       "nodes": [
-        { "id": "enter_home", "label": "进入家门", "x": 430, "y": 42, "width": 150, "height": 58, "type": "start" },
-        { "id": "has_slippers", "label": "门口有拖鞋吗？", "x": 402, "y": 154, "width": 206, "height": 150, "type": "decision" },
-        { "id": "wear_slippers", "label": "穿上门口的拖鞋", "x": 96, "y": 360, "width": 190, "height": 60, "type": "action" },
-        { "id": "find_slippers", "label": "去鞋柜找一双拖鞋穿", "x": 704, "y": 360, "width": 220, "height": 60, "type": "action" },
-        { "id": "go_sofa", "label": "去沙发上躺着", "x": 424, "y": 468, "width": 180, "height": 60, "type": "end" }
+        { "id": "enter_home", "label": "\u8fdb\u5165\u5bb6\u95e8", "x": 430, "y": 42, "width": 150, "height": 58, "type": "start" },
+        { "id": "has_slippers", "label": "\u95e8\u53e3\u6709\u62d6\u978b\u5417\uff1f", "x": 402, "y": 154, "width": 206, "height": 150, "type": "decision" },
+        { "id": "wear_slippers", "label": "\u7a7f\u4e0a\u95e8\u53e3\u7684\u62d6\u978b", "x": 96, "y": 360, "width": 190, "height": 60, "type": "action" },
+        { "id": "find_slippers", "label": "\u53bb\u978b\u67dc\u627e\u4e00\u53cc\u62d6\u978b\u7a7f", "x": 704, "y": 360, "width": 220, "height": 60, "type": "action" },
+        { "id": "go_sofa", "label": "\u53bb\u6c99\u53d1\u4e0a\u8eba\u7740", "x": 424, "y": 468, "width": 180, "height": 60, "type": "end" }
       ],
       "edges": [
         { "id": "enter_to_decision", "source": "enter_home", "target": "has_slippers", "label": "" },
-        { "id": "yes_to_wear", "source": "has_slippers", "target": "wear_slippers", "label": "是" },
-        { "id": "no_to_find", "source": "has_slippers", "target": "find_slippers", "label": "否" },
+        { "id": "yes_to_wear", "source": "has_slippers", "target": "wear_slippers", "label": "\u662f" },
+        { "id": "no_to_find", "source": "has_slippers", "target": "find_slippers", "label": "\u5426" },
         { "id": "wear_to_sofa", "source": "wear_slippers", "target": "go_sofa", "label": "" },
         { "id": "find_to_sofa", "source": "find_slippers", "target": "go_sofa", "label": "" }
       ]
