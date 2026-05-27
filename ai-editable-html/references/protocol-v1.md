@@ -43,7 +43,8 @@ Rules:
       "x": 32,
       "y": 48,
       "width": 150,
-      "height": 58
+      "height": 58,
+      "type": "start"
     }
   ],
   "edges": [
@@ -64,6 +65,8 @@ Rules:
 - Edges must reference existing node IDs.
 - Coordinates are pixels relative to the flow container.
 - Node labels are plain text.
+- Node `type` is optional. Recommended values are `start`, `decision`, `action`, and `end`.
+- Renderers should add `.ai-flow-node-${type}` classes when `type` is present.
 
 ## Extension Contract
 

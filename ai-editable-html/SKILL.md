@@ -29,6 +29,7 @@ Always produce one complete HTML document. The document must:
 - Keep flowchart data in the JSON model, not only in SVG or canvas.
 - Include the runtime from `assets/runtime-v1.js` inline before `</body>` when the page contains a flow block.
 - Avoid minifying the model JSON. Keep it readable.
+- Do not place pre-rendered node DOM, static flow SVG, or custom drag scripts inside editable flow containers. The runtime and browser extension must be the only code that renders or edits flow nodes.
 
 ## Editable Text Blocks
 
@@ -80,6 +81,15 @@ The container should be a normal block element:
 
 Flow node coordinates are local to the flow container. Use a container with an explicit `height`, `min-height`, or `aspect-ratio`.
 
+Optional node `type` values can be used for styling:
+
+- `start`
+- `decision`
+- `action`
+- `end`
+
+Style these through `.ai-flow-node-start`, `.ai-flow-node-decision`, `.ai-flow-node-action`, and `.ai-flow-node-end`. The extension reuses these classes while editing.
+
 ## Styling Guidance
 
 - Make pages attractive as normal standalone HTML even before editing.
@@ -87,6 +97,7 @@ Flow node coordinates are local to the flow container. Use a container with an e
 - Use the runtime only to render flow blocks from the model.
 - Do not draw editable flows as static SVG only.
 - Do not use canvas for editable text or flow blocks.
+- Do not add page-level mouse drag handlers for flow nodes. Dragging is an editor feature, not a normal display feature.
 - Keep responsive CSS simple; flow node coordinates are edited in pixels.
 
 ## Validation Checklist

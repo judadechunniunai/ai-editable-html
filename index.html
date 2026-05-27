@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="zh-CN" data-ai-editable-html="v1">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>回家流程图</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 40px 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #172033;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0 0 32px;
+      color: #fff;
+      text-align: center;
+      font-size: 2.5rem;
+      line-height: 1.1;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, .22);
+    }
+
+    .flow-wrap {
+      min-height: 620px;
+      padding: 40px;
+      border-radius: 20px;
+      background: #fff;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .3);
+    }
+
+    .ai-flow {
+      width: 100%;
+      min-height: 520px;
+      position: relative;
+      overflow: hidden;
+      border-radius: 16px;
+      background:
+        linear-gradient(rgba(15, 23, 42, .05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(15, 23, 42, .05) 1px, transparent 1px),
+        #f8fafc;
+      background-size: 28px 28px;
+    }
+
+    .ai-flow-lines line {
+      stroke: #9ca3af;
+      stroke-width: 3;
+      stroke-linecap: round;
+    }
+
+    .ai-flow-node {
+      border: 0;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, .18);
+    }
+
+    .ai-flow-node-start {
+      background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    }
+
+    .ai-flow-node-decision {
+      background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%);
+      clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+      border-radius: 0;
+      text-align: center;
+    }
+
+    .ai-flow-node-action {
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+
+    .ai-flow-node-end {
+      border-radius: 999px;
+      background: linear-gradient(135deg, #434343 0%, #000000 100%);
+    }
+
+    .ai-flow-edge-label {
+      background: #fff;
+      color: #6b7280;
+      font-size: 14px;
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .1);
+    }
+
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #fff;
+      font-size: 14px;
+    }
+
+    .legend-color {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+    }
+
+    @media (max-width: 760px) {
+      body {
+        padding: 24px 12px;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      .flow-wrap {
+        padding: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <h1 data-edit-id="page_title">回家流程</h1>
+
+    <section class="flow-wrap">
+      <div data-flow-id="home_flow" class="ai-flow"></div>
+    </section>
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-color ai-flow-node-start"></div>
+        <span>开始</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color ai-flow-node-decision"></div>
+        <span>判断</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color ai-flow-node-action"></div>
+        <span>操作</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color ai-flow-node-end"></div>
+        <span>结束</span>
+      </div>
+    </div>
+  </main>
+
+  <script id="ai-editable-html-model" type="application/json">
+{
+  "version": "1",
+  "title": "回家流程图",
+  "blocks": [
+    {
+      "id": "page_title",
+      "type": "text",
+      "selector": "[data-edit-id='page_title']",
+      "content": "回家流程"
+    },
+    {
+      "id": "home_flow",
+      "type": "flow",
+      "selector": "[data-flow-id='home_flow']",
+      "nodes": [
+        { "id": "enter_home", "label": "进入家门", "x": 430, "y": 42, "width": 150, "height": 58, "type": "start" },
+        { "id": "has_slippers", "label": "门口有拖鞋吗？", "x": 402, "y": 154, "width": 206, "height": 150, "type": "decision" },
+        { "id": "wear_slippers", "label": "穿上门口的拖鞋", "x": 96, "y": 360, "width": 190, "height": 60, "type": "action" },
+        { "id": "find_slippers", "label": "去鞋柜找一双拖鞋穿", "x": 704, "y": 360, "width": 220, "height": 60, "type": "action" },
+        { "id": "go_sofa", "label": "去沙发上躺着", "x": 424, "y": 468, "width": 180, "height": 60, "type": "end" }
+      ],
+      "edges": [
+        { "id": "enter_to_decision", "source": "enter_home", "target": "has_slippers", "label": "" },
+        { "id": "yes_to_wear", "source": "has_slippers", "target": "wear_slippers", "label": "是" },
+        { "id": "no_to_find", "source": "has_slippers", "target": "find_slippers", "label": "否" },
+        { "id": "wear_to_sofa", "source": "wear_slippers", "target": "go_sofa", "label": "" },
+        { "id": "find_to_sofa", "source": "find_slippers", "target": "go_sofa", "label": "" }
+      ]
+    }
+  ]
+}
+  </script>
+  <script src="ai-editable-html/assets/runtime-v1.js"></script>
+</body>
+</html>

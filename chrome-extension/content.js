@@ -54,6 +54,10 @@
       .replace(/"/g, "&quot;");
   }
 
+  function safeClass(value) {
+    return String(value || "action").toLowerCase().replace(/[^a-z0-9_-]+/g, "-");
+  }
+
   function makeId(prefix, list) {
     var used = {};
     list.forEach(function (item) { used[item.id] = true; });
@@ -129,11 +133,20 @@
         }
       });
       svg.appendChild(line);
+      if (edge.label) {
+        var label = document.createElement("div");
+        label.className = "aieh-edge-label ai-flow-edge-label";
+        label.dataset.edgeId = edge.id;
+        label.textContent = edge.label;
+        label.style.left = ((a.x + b.x) / 2) + "px";
+        label.style.top = ((a.y + b.y) / 2) + "px";
+        container.appendChild(label);
+      }
     });
 
     nodes.forEach(function (node) {
       var el = document.createElement("div");
-      el.className = "aieh-node";
+      el.className = "aieh-node ai-flow-node ai-flow-node-" + safeClass(node.type);
       el.dataset.nodeId = node.id;
       el.textContent = node.label || node.id;
       el.style.left = Number(node.x || 0) + "px";
@@ -207,6 +220,11 @@
       line.setAttribute("y1", a.y);
       line.setAttribute("x2", b.x);
       line.setAttribute("y2", b.y);
+      var label = container.querySelector('.aieh-edge-label[data-edge-id="' + CSS.escape(edge.id) + '"]');
+      if (label) {
+        label.style.left = ((a.x + b.x) / 2) + "px";
+        label.style.top = ((a.y + b.y) / 2) + "px";
+      }
     });
   }
 

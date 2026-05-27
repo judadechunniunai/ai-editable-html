@@ -71,6 +71,19 @@
   stroke-width: 4;
 }
 
+.aieh-edge-label {
+  position: absolute;
+  z-index: 2;
+  transform: translate(-50%, -50%);
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #526070;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, .12);
+  font: 600 12px/1.2 system-ui, -apple-system, Segoe UI, sans-serif;
+  pointer-events: none;
+}
+
 .aieh-node {
   position: absolute;
   display: flex;
@@ -85,6 +98,33 @@
   box-shadow: 0 6px 16px rgba(15, 23, 42, .08);
   cursor: grab;
   font: 600 14px/1.2 system-ui, -apple-system, Segoe UI, sans-serif;
+}
+
+.aieh-node.ai-flow-node-start {
+  border: 0;
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  color: #ffffff;
+}
+
+.aieh-node.ai-flow-node-decision {
+  border: 0;
+  background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%);
+  color: #ffffff;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  border-radius: 0;
+}
+
+.aieh-node.ai-flow-node-action {
+  border: 0;
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: #ffffff;
+}
+
+.aieh-node.ai-flow-node-end {
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #434343 0%, #000000 100%);
+  color: #ffffff;
 }
 
 .aieh-node:active {
