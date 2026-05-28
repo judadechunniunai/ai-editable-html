@@ -77,7 +77,7 @@ Or from a cloned repo:
 .\scripts\install-skill.ps1 -Target trae -TraeProject .
 ```
 
-The installer copies the rule to `.trae/rules/ai-editable-html.md`.
+The installer copies the rule to `.trae/rules/ai-editable-html.md` and copies validator/runtime resources to `.trae/ai-editable-html/`.
 
 ## Install The Chrome Extension
 

@@ -62,10 +62,10 @@ Recommended node types: `start`, `decision`, `process`, `action`, `end`.
 
 ## Post-Generation Check
 
-If the repository tools are available, run:
+The installer copies validator resources to `.trae/ai-editable-html`. After generating a page, run:
 
 ```bash
-node ai-editable-html/scripts/validate_editable_html.js path/to/page.html
+node .trae/ai-editable-html/scripts/validate_editable_html.js path/to/page.html
 ```
 
 Fix errors before returning the page. Improve warnings when practical.

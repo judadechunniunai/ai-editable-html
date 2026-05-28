@@ -65,16 +65,29 @@ function Install-CursorRule($repoRoot) {
 
 function Install-TraeRule($repoRoot) {
   $source = Join-Path $repoRoot "trae-rules\ai-editable-html.md"
+  $resourceSource = Join-Path $repoRoot "ai-editable-html"
   $targetRoot = Join-Path $TraeProject ".trae\rules"
   $target = Join-Path $targetRoot "ai-editable-html.md"
+  $resourceTargetRoot = Join-Path $TraeProject ".trae"
+  $resourceTarget = Join-Path $resourceTargetRoot "ai-editable-html"
 
   if (!(Test-Path $source)) {
     throw "Cannot find Trae rule at $source"
+  }
+  if (!(Test-Path $resourceSource)) {
+    throw "Cannot find AI Editable HTML resources at $resourceSource"
   }
 
   New-Item -ItemType Directory -Force -Path $targetRoot | Out-Null
   Copy-Item -Force -Path $source -Destination $target
   Write-Host "Installed Trae rule to $target"
+
+  New-Item -ItemType Directory -Force -Path $resourceTargetRoot | Out-Null
+  if (Test-Path $resourceTarget) {
+    Remove-Item -Recurse -Force $resourceTarget
+  }
+  Copy-Item -Recurse -Path $resourceSource -Destination $resourceTarget
+  Write-Host "Installed Trae resources to $resourceTarget"
 }
 
 $repoRoot = Get-RepoRoot

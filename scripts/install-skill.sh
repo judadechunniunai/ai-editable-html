@@ -53,15 +53,26 @@ install_cursor() {
 
 install_trae() {
   source_file="$repo_root/trae-rules/ai-editable-html.md"
+  resource_source="$repo_root/ai-editable-html"
   target_root="$trae_project/.trae/rules"
   target_file="$target_root/ai-editable-html.md"
+  resource_target="$trae_project/.trae/ai-editable-html"
   if [ ! -f "$source_file" ]; then
     echo "Cannot find Trae rule at $source_file" >&2
+    exit 1
+  fi
+  if [ ! -d "$resource_source" ]; then
+    echo "Cannot find AI Editable HTML resources at $resource_source" >&2
     exit 1
   fi
   mkdir -p "$target_root"
   cp "$source_file" "$target_file"
   echo "Installed Trae rule to $target_file"
+
+  mkdir -p "$trae_project/.trae"
+  rm -rf "$resource_target"
+  cp -R "$resource_source" "$resource_target"
+  echo "Installed Trae resources to $resource_target"
 }
 
 case "$target" in
