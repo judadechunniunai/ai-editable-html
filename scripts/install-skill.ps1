@@ -1,10 +1,11 @@
 param(
   [string]$Repo = "judadechunniunai/ai-editable-html",
   [string]$Ref = "main",
-  [ValidateSet("codex", "cursor", "trae", "both", "all")]
+  [ValidateSet("codex", "cursor", "trae", "claude", "both", "all")]
   [string]$Target = "codex",
   [string]$CursorProject = (Get-Location).Path,
-  [string]$TraeProject = (Get-Location).Path
+  [string]$TraeProject = (Get-Location).Path,
+  [string]$ClaudeProject = (Get-Location).Path
 )
 
 $ErrorActionPreference = "Stop"
@@ -51,16 +52,29 @@ function Install-CodexSkill($repoRoot) {
 
 function Install-CursorRule($repoRoot) {
   $source = Join-Path $repoRoot "cursor-rules\ai-editable-html.mdc"
+  $resourceSource = Join-Path $repoRoot "ai-editable-html"
   $targetRoot = Join-Path $CursorProject ".cursor\rules"
   $target = Join-Path $targetRoot "ai-editable-html.mdc"
+  $resourceTargetRoot = Join-Path $CursorProject ".cursor"
+  $resourceTarget = Join-Path $resourceTargetRoot "ai-editable-html"
 
   if (!(Test-Path $source)) {
     throw "Cannot find Cursor rule at $source"
+  }
+  if (!(Test-Path $resourceSource)) {
+    throw "Cannot find AI Editable HTML resources at $resourceSource"
   }
 
   New-Item -ItemType Directory -Force -Path $targetRoot | Out-Null
   Copy-Item -Force -Path $source -Destination $target
   Write-Host "Installed Cursor rule to $target"
+
+  New-Item -ItemType Directory -Force -Path $resourceTargetRoot | Out-Null
+  if (Test-Path $resourceTarget) {
+    Remove-Item -Recurse -Force $resourceTarget
+  }
+  Copy-Item -Recurse -Path $resourceSource -Destination $resourceTarget
+  Write-Host "Installed Cursor resources to $resourceTarget"
 }
 
 function Install-TraeRule($repoRoot) {
@@ -90,6 +104,31 @@ function Install-TraeRule($repoRoot) {
   Write-Host "Installed Trae resources to $resourceTarget"
 }
 
+function Install-ClaudeRule($repoRoot) {
+  $source = Join-Path $repoRoot "claude-rules\CLAUDE.md"
+  $resourceSource = Join-Path $repoRoot "ai-editable-html"
+  $targetRoot = Join-Path $ClaudeProject ".claude"
+  $target = Join-Path $targetRoot "CLAUDE.md"
+  $resourceTarget = Join-Path $targetRoot "ai-editable-html"
+
+  if (!(Test-Path $source)) {
+    throw "Cannot find Claude rule at $source"
+  }
+  if (!(Test-Path $resourceSource)) {
+    throw "Cannot find AI Editable HTML resources at $resourceSource"
+  }
+
+  New-Item -ItemType Directory -Force -Path $targetRoot | Out-Null
+  Copy-Item -Force -Path $source -Destination $target
+  Write-Host "Installed Claude Code instructions to $target"
+
+  if (Test-Path $resourceTarget) {
+    Remove-Item -Recurse -Force $resourceTarget
+  }
+  Copy-Item -Recurse -Path $resourceSource -Destination $resourceTarget
+  Write-Host "Installed Claude Code resources to $resourceTarget"
+}
+
 $repoRoot = Get-RepoRoot
 if ($Target -eq "codex" -or $Target -eq "both" -or $Target -eq "all") {
   Install-CodexSkill $repoRoot
@@ -99,4 +138,7 @@ if ($Target -eq "cursor" -or $Target -eq "both" -or $Target -eq "all") {
 }
 if ($Target -eq "trae" -or $Target -eq "all") {
   Install-TraeRule $repoRoot
+}
+if ($Target -eq "claude" -or $Target -eq "all") {
+  Install-ClaudeRule $repoRoot
 }

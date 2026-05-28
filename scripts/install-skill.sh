@@ -6,6 +6,7 @@ target="${2:-codex}"
 ref="${3:-main}"
 cursor_project="${4:-$PWD}"
 trae_project="${5:-$PWD}"
+claude_project="${6:-$PWD}"
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd || true)"
 repo_root=""
@@ -40,15 +41,26 @@ install_codex() {
 
 install_cursor() {
   source_file="$repo_root/cursor-rules/ai-editable-html.mdc"
+  resource_source="$repo_root/ai-editable-html"
   target_root="$cursor_project/.cursor/rules"
   target_file="$target_root/ai-editable-html.mdc"
+  resource_target="$cursor_project/.cursor/ai-editable-html"
   if [ ! -f "$source_file" ]; then
     echo "Cannot find Cursor rule at $source_file" >&2
+    exit 1
+  fi
+  if [ ! -d "$resource_source" ]; then
+    echo "Cannot find AI Editable HTML resources at $resource_source" >&2
     exit 1
   fi
   mkdir -p "$target_root"
   cp "$source_file" "$target_file"
   echo "Installed Cursor rule to $target_file"
+
+  mkdir -p "$cursor_project/.cursor"
+  rm -rf "$resource_target"
+  cp -R "$resource_source" "$resource_target"
+  echo "Installed Cursor resources to $resource_target"
 }
 
 install_trae() {
@@ -75,6 +87,29 @@ install_trae() {
   echo "Installed Trae resources to $resource_target"
 }
 
+install_claude() {
+  source_file="$repo_root/claude-rules/CLAUDE.md"
+  resource_source="$repo_root/ai-editable-html"
+  target_root="$claude_project/.claude"
+  target_file="$target_root/CLAUDE.md"
+  resource_target="$target_root/ai-editable-html"
+  if [ ! -f "$source_file" ]; then
+    echo "Cannot find Claude rule at $source_file" >&2
+    exit 1
+  fi
+  if [ ! -d "$resource_source" ]; then
+    echo "Cannot find AI Editable HTML resources at $resource_source" >&2
+    exit 1
+  fi
+  mkdir -p "$target_root"
+  cp "$source_file" "$target_file"
+  echo "Installed Claude Code instructions to $target_file"
+
+  rm -rf "$resource_target"
+  cp -R "$resource_source" "$resource_target"
+  echo "Installed Claude Code resources to $resource_target"
+}
+
 case "$target" in
   codex)
     install_codex
@@ -85,6 +120,9 @@ case "$target" in
   trae)
     install_trae
     ;;
+  claude)
+    install_claude
+    ;;
   both)
     install_codex
     install_cursor
@@ -93,9 +131,10 @@ case "$target" in
     install_codex
     install_cursor
     install_trae
+    install_claude
     ;;
   *)
-    echo "Target must be codex, cursor, trae, both, or all." >&2
+    echo "Target must be codex, cursor, trae, claude, both, or all." >&2
     exit 1
     ;;
 esac

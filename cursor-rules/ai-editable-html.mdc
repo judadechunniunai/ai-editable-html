@@ -16,6 +16,7 @@ Requirements:
 - Use plain text labels and stable lower_snake_case IDs.
 - Do not render editable flows only as static SVG or canvas.
 - Include or inline the v1 runtime when the page contains flow blocks.
+- Add the subtle GitHub badge unless the user asks for no branding.
 
 Text block shape:
 
@@ -44,4 +45,18 @@ Flow block shape:
 }
 ```
 
-Before returning HTML, verify that the model parses as JSON, selectors resolve, and every edge references existing node IDs.
+Flow layout rules:
+
+- Keep at least 48px gap between node bounding boxes.
+- Never overlap nodes.
+- Minimize edge crossings by separating branches into lanes or columns.
+- Keep edge labels away from nodes.
+- Use scrollable large canvases sized from node bounds instead of clipping.
+
+If the project resources are installed, run this before returning HTML:
+
+```bash
+node .cursor/ai-editable-html/scripts/validate_editable_html.js path/to/page.html
+```
+
+Before returning HTML, verify that the model parses as JSON, selectors resolve, every edge references existing node IDs, and the validator has no errors.

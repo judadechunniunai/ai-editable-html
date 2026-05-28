@@ -7,6 +7,7 @@ The project has two parts:
 - `ai-editable-html/`: a Codex-style skill that instructs an agent to generate `ai-editable-html-v1` pages.
 - `cursor-rules/`: a Cursor project rule with the same generation protocol.
 - `trae-rules/`: a Trae project rule with the same generation protocol.
+- `claude-rules/`: Claude Code project instructions with the same generation protocol.
 - `chrome-extension/`: a Chrome Manifest V3 extension that edits compatible pages in place.
 
 ## Current Features
@@ -63,6 +64,8 @@ Or install both Codex and Cursor support:
 .\scripts\install-skill.ps1 -Target both -CursorProject .
 ```
 
+The installer copies the rule to `.cursor/rules/ai-editable-html.mdc` and copies validator/runtime resources to `.cursor/ai-editable-html/`.
+
 ## Install The Trae Rule
 
 From inside the Trae project where you want the rule:
@@ -78,6 +81,22 @@ Or from a cloned repo:
 ```
 
 The installer copies the rule to `.trae/rules/ai-editable-html.md` and copies validator/runtime resources to `.trae/ai-editable-html/`.
+
+## Install The Claude Code Instructions
+
+From inside the Claude Code project where you want the instructions:
+
+```powershell
+$repo="judadechunniunai/ai-editable-html"; $s="$env:TEMP\install-ai-editable-html.ps1"; iwr -UseB "https://raw.githubusercontent.com/$repo/main/scripts/install-skill.ps1" -OutFile $s; powershell -ExecutionPolicy Bypass -File $s -Repo $repo -Target claude -ClaudeProject .
+```
+
+Or from a cloned repo:
+
+```powershell
+.\scripts\install-skill.ps1 -Target claude -ClaudeProject .
+```
+
+The installer copies instructions to `.claude/CLAUDE.md` and copies validator/runtime resources to `.claude/ai-editable-html/`.
 
 ## Install The Chrome Extension
 
@@ -134,6 +153,8 @@ cursor-rules/
   ai-editable-html.mdc
 trae-rules/
   ai-editable-html.md
+claude-rules/
+  CLAUDE.md
 downloads/
   ai-editable-html-chrome-extension.zip
 ```
