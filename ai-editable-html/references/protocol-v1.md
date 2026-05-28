@@ -69,8 +69,9 @@ Rules:
 - Coordinates are pixels relative to the flow container.
 - Node labels are plain text.
 - Edge labels are plain text and can be empty. Empty labels can be filled by the browser extension.
-- Node `type` is optional. Recommended values are `start`, `decision`, `action`, and `end`.
+- Node `type` is optional. Recommended values are `start`, `decision`, `process`, `action`, and `end`.
 - Renderers should add `.ai-flow-node-${type}` classes when `type` is present.
+- Renderers should size the flow canvas from node bounds and allow scrolling instead of clipping oversized diagrams.
 
 ## Extension Contract
 

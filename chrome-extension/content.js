@@ -9,6 +9,7 @@
   var state = {
     model: null,
     selectedFlowId: "",
+    selectedNodeId: "",
     mode: "select",
     linkSource: null,
     nodeType: "action"
@@ -81,6 +82,19 @@
     return String(value || "action").toLowerCase().replace(/[^a-z0-9_-]+/g, "-");
   }
 
+  function flowBounds(nodes) {
+    var maxX = 0;
+    var maxY = 0;
+    nodes.forEach(function (node) {
+      maxX = Math.max(maxX, Number(node.x || 0) + Number(node.width || 140));
+      maxY = Math.max(maxY, Number(node.y || 0) + Number(node.height || 56));
+    });
+    return {
+      width: Math.ceil(maxX + 80),
+      height: Math.ceil(maxY + 80)
+    };
+  }
+
   function makeId(prefix, list) {
     var used = {};
     list.forEach(function (item) { used[item.id] = true; });
@@ -124,8 +138,11 @@
 
     var nodes = Array.isArray(flow.nodes) ? flow.nodes : (flow.nodes = []);
     var edges = Array.isArray(flow.edges) ? flow.edges : (flow.edges = []);
-    var width = Math.max(container.clientWidth || 640, 320);
-    var height = Math.max(container.clientHeight || 320, 240);
+    var bounds = flowBounds(nodes);
+    var width = Math.max(container.clientWidth || 640, bounds.width, 320);
+    var height = Math.max(container.clientHeight || 320, bounds.height, 240);
+    container.style.minWidth = width + "px";
+    container.style.minHeight = height + "px";
     var byId = {};
     nodes.forEach(function (node) { byId[node.id] = node; });
 
@@ -197,6 +214,7 @@
       el.style.width = Number(node.width || 140) + "px";
       el.style.height = Number(node.height || 56) + "px";
       if (state.linkSource === node.id) el.classList.add("is-link-source");
+      if (state.selectedFlowId === flow.id && state.selectedNodeId === node.id) el.classList.add("is-selected");
 
       el.addEventListener("input", function () {
         node.label = el.textContent;
@@ -213,14 +231,22 @@
 
       el.addEventListener("click", function (event) {
         event.stopPropagation();
+        state.selectedFlowId = flow.id;
+        state.selectedNodeId = node.id;
         if (state.mode === "edge") {
           handleEdgeClick(flow, node.id);
         } else if (state.mode === "delete") {
           flow.nodes = nodes.filter(function (candidate) { return candidate.id !== node.id; });
           flow.edges = edges.filter(function (edge) { return edge.source !== node.id && edge.target !== node.id; });
           state.linkSource = null;
+          state.selectedNodeId = "";
           writeModel();
           renderFlow(flow);
+        } else {
+          container.querySelectorAll(".aieh-node.is-selected").forEach(function (selected) {
+            selected.classList.remove("is-selected");
+          });
+          el.classList.add("is-selected");
         }
       });
 
@@ -306,10 +332,11 @@
     var dimensions = {
       start: { width: 150, height: 58 },
       decision: { width: 190, height: 140 },
+      process: { width: 170, height: 60 },
       action: { width: 160, height: 60 },
       end: { width: 160, height: 60 }
     }[state.nodeType] || { width: 160, height: 60 };
-    flow.nodes.push({
+    var node = {
       id: id,
       label: "New " + state.nodeType,
       x: 48,
@@ -317,7 +344,26 @@
       width: dimensions.width,
       height: dimensions.height,
       type: state.nodeType
-    });
+    };
+    flow.nodes.push(node);
+    state.selectedFlowId = flow.id;
+    state.selectedNodeId = node.id;
+    writeModel();
+    renderFlow(flow);
+  }
+
+  function scaleSelectedNode(factor) {
+    var flow = flowById(state.selectedFlowId);
+    if (!flow || !state.selectedNodeId) {
+      toast("Select a node first.");
+      return;
+    }
+    var node = nodeById(flow, state.selectedNodeId);
+    if (!node) return;
+    var width = Number(node.width || 140);
+    var height = Number(node.height || 56);
+    node.width = Math.max(40, Math.round(width * factor));
+    node.height = Math.max(24, Math.round(height * factor));
     writeModel();
     renderFlow(flow);
   }
@@ -385,6 +431,7 @@
     var typeSelect = document.createElement("select");
     [
       ["action", "Action"],
+      ["process", "Process"],
       ["decision", "Decision"],
       ["start", "Start"],
       ["end", "End"]
@@ -404,6 +451,22 @@
     add.addEventListener("click", addNode);
     addGroup.appendChild(add);
     toolbar.appendChild(addGroup);
+
+    var sizeGroup = document.createElement("div");
+    sizeGroup.className = "aieh-toolbar-group";
+
+    var shrink = document.createElement("button");
+    shrink.textContent = "-";
+    shrink.title = "Scale selected node down";
+    shrink.addEventListener("click", function () { scaleSelectedNode(0.9); });
+    sizeGroup.appendChild(shrink);
+
+    var grow = document.createElement("button");
+    grow.textContent = "+";
+    grow.title = "Scale selected node up";
+    grow.addEventListener("click", function () { scaleSelectedNode(1.1); });
+    sizeGroup.appendChild(grow);
+    toolbar.appendChild(sizeGroup);
 
     var save = document.createElement("button");
     save.textContent = "Download";

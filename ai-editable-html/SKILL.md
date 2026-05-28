@@ -95,14 +95,23 @@ The container should be a normal block element:
 
 Flow node coordinates are local to the flow container. Use a container with an explicit `height`, `min-height`, or `aspect-ratio`.
 
+For large or complex flows, compute the canvas size from node bounds:
+
+- `canvas width >= max(node.x + node.width) + 80`
+- `canvas height >= max(node.y + node.height) + 80`
+- Set the flow container `min-width` and `min-height` to those values or larger.
+- Use `overflow: auto`, not `overflow: hidden`, so large diagrams remain inspectable.
+- Do not rely on a small fixed-height frame when any node coordinate exceeds that frame.
+
 Optional node `type` values can be used for styling:
 
 - `start`
 - `decision`
+- `process`
 - `action`
 - `end`
 
-Style these through `.ai-flow-node-start`, `.ai-flow-node-decision`, `.ai-flow-node-action`, and `.ai-flow-node-end`. The extension reuses these classes while editing.
+Style these through `.ai-flow-node-start`, `.ai-flow-node-decision`, `.ai-flow-node-process`, `.ai-flow-node-action`, and `.ai-flow-node-end`. The extension reuses these classes while editing.
 
 Edge labels are directly editable in the browser extension. Use an empty string when a label is not needed yet; the extension can fill it later.
 
@@ -115,6 +124,7 @@ Edge labels are directly editable in the browser extension. Use an empty string 
 - Do not use canvas for editable text or flow blocks.
 - Do not add page-level mouse drag handlers for flow nodes. Dragging is an editor feature, not a normal display feature.
 - Keep responsive CSS simple; flow node coordinates are edited in pixels.
+- Prefer scrollable large canvases over clipping or shrinking complex diagrams until labels become unreadable.
 
 ## Validation Checklist
 
