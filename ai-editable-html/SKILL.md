@@ -189,4 +189,12 @@ Before returning HTML:
 - The inline runtime is present when flow blocks exist.
 - The page remains useful if the browser extension is not installed.
 
+When local execution is available, run the bundled validator before returning the file:
+
+```bash
+node ai-editable-html/scripts/validate_editable_html.js path/to/page.html
+```
+
+The validator reports `flowCount`, per-flow node and edge counts, required canvas size, node overlaps, too-close nodes, crossing edges, edges through unrelated nodes, edge labels covering nodes, and broken edge references. Treat errors as must-fix. Treat warnings as layout issues to improve unless the graph is intentionally dense.
+
 See `references/protocol-v1.md` for the full model shape and `assets/example-editable-page.html` for a compact example.

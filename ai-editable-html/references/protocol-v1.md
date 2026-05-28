@@ -83,6 +83,14 @@ Generated flow blocks should be readable before editing:
 - Edge labels should not cover nodes.
 - Large flows should use a scrollable canvas sized from node bounds.
 
+The bundled validator can be run after generation:
+
+```bash
+node ai-editable-html/scripts/validate_editable_html.js path/to/page.html
+```
+
+It checks all flow blocks in the page model and reports graph counts, overlap errors, spacing warnings, edge crossings, edge-through-node warnings, edge-label collisions, required canvas size, and missing edge endpoints.
+
 ## GitHub Badge
 
 Generated pages should include a subtle source badge unless the user asks for a no-brand export:
