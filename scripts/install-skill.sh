@@ -5,6 +5,7 @@ repo="${1:-judadechunniunai/ai-editable-html}"
 target="${2:-codex}"
 ref="${3:-main}"
 cursor_project="${4:-$PWD}"
+trae_project="${5:-$PWD}"
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd || true)"
 repo_root=""
@@ -50,6 +51,19 @@ install_cursor() {
   echo "Installed Cursor rule to $target_file"
 }
 
+install_trae() {
+  source_file="$repo_root/trae-rules/ai-editable-html.md"
+  target_root="$trae_project/.trae/rules"
+  target_file="$target_root/ai-editable-html.md"
+  if [ ! -f "$source_file" ]; then
+    echo "Cannot find Trae rule at $source_file" >&2
+    exit 1
+  fi
+  mkdir -p "$target_root"
+  cp "$source_file" "$target_file"
+  echo "Installed Trae rule to $target_file"
+}
+
 case "$target" in
   codex)
     install_codex
@@ -57,12 +71,20 @@ case "$target" in
   cursor)
     install_cursor
     ;;
+  trae)
+    install_trae
+    ;;
   both)
     install_codex
     install_cursor
     ;;
+  all)
+    install_codex
+    install_cursor
+    install_trae
+    ;;
   *)
-    echo "Target must be codex, cursor, or both." >&2
+    echo "Target must be codex, cursor, trae, both, or all." >&2
     exit 1
     ;;
 esac

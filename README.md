@@ -6,6 +6,7 @@ The project has two parts:
 
 - `ai-editable-html/`: a Codex-style skill that instructs an agent to generate `ai-editable-html-v1` pages.
 - `cursor-rules/`: a Cursor project rule with the same generation protocol.
+- `trae-rules/`: a Trae project rule with the same generation protocol.
 - `chrome-extension/`: a Chrome Manifest V3 extension that edits compatible pages in place.
 
 ## Current Features
@@ -62,6 +63,22 @@ Or install both Codex and Cursor support:
 .\scripts\install-skill.ps1 -Target both -CursorProject .
 ```
 
+## Install The Trae Rule
+
+From inside the Trae project where you want the rule:
+
+```powershell
+$repo="judadechunniunai/ai-editable-html"; $s="$env:TEMP\install-ai-editable-html.ps1"; iwr -UseB "https://raw.githubusercontent.com/$repo/main/scripts/install-skill.ps1" -OutFile $s; powershell -ExecutionPolicy Bypass -File $s -Repo $repo -Target trae -TraeProject .
+```
+
+Or from a cloned repo:
+
+```powershell
+.\scripts\install-skill.ps1 -Target trae -TraeProject .
+```
+
+The installer copies the rule to `.trae/rules/ai-editable-html.md`.
+
 ## Install The Chrome Extension
 
 Download `downloads/ai-editable-html-chrome-extension.zip` from GitHub, unzip it, then:
@@ -115,6 +132,8 @@ scripts/
   package-extension.sh
 cursor-rules/
   ai-editable-html.mdc
+trae-rules/
+  ai-editable-html.md
 downloads/
   ai-editable-html-chrome-extension.zip
 ```

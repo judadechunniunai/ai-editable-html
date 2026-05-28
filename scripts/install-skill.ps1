@@ -1,9 +1,10 @@
 param(
   [string]$Repo = "judadechunniunai/ai-editable-html",
   [string]$Ref = "main",
-  [ValidateSet("codex", "cursor", "both")]
+  [ValidateSet("codex", "cursor", "trae", "both", "all")]
   [string]$Target = "codex",
-  [string]$CursorProject = (Get-Location).Path
+  [string]$CursorProject = (Get-Location).Path,
+  [string]$TraeProject = (Get-Location).Path
 )
 
 $ErrorActionPreference = "Stop"
@@ -62,10 +63,27 @@ function Install-CursorRule($repoRoot) {
   Write-Host "Installed Cursor rule to $target"
 }
 
+function Install-TraeRule($repoRoot) {
+  $source = Join-Path $repoRoot "trae-rules\ai-editable-html.md"
+  $targetRoot = Join-Path $TraeProject ".trae\rules"
+  $target = Join-Path $targetRoot "ai-editable-html.md"
+
+  if (!(Test-Path $source)) {
+    throw "Cannot find Trae rule at $source"
+  }
+
+  New-Item -ItemType Directory -Force -Path $targetRoot | Out-Null
+  Copy-Item -Force -Path $source -Destination $target
+  Write-Host "Installed Trae rule to $target"
+}
+
 $repoRoot = Get-RepoRoot
-if ($Target -eq "codex" -or $Target -eq "both") {
+if ($Target -eq "codex" -or $Target -eq "both" -or $Target -eq "all") {
   Install-CodexSkill $repoRoot
 }
-if ($Target -eq "cursor" -or $Target -eq "both") {
+if ($Target -eq "cursor" -or $Target -eq "both" -or $Target -eq "all") {
   Install-CursorRule $repoRoot
+}
+if ($Target -eq "trae" -or $Target -eq "all") {
+  Install-TraeRule $repoRoot
 }
