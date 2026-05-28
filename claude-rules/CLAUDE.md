@@ -35,3 +35,12 @@ node .claude/ai-editable-html/scripts/validate_editable_html.js path/to/page.htm
 ```
 
 Fix errors before returning the page. Improve warnings when practical.
+
+Repair loop:
+
+1. Generate the HTML.
+2. Run the validator.
+3. If there are any errors, revise node coordinates, canvas size, edge routing, or labels, then run the validator again.
+4. Do not return the page while errors remain.
+5. If there are warnings, make at least one layout improvement pass. Prioritize: node overlap, edge through unrelated node, edge label covering node, edge crossing, node spacing under 48px.
+6. Run the validator again after the improvement pass.

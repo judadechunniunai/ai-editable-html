@@ -197,4 +197,13 @@ node ai-editable-html/scripts/validate_editable_html.js path/to/page.html
 
 The validator reports `flowCount`, per-flow node and edge counts, required canvas size, node overlaps, too-close nodes, crossing edges, edges through unrelated nodes, edge labels covering nodes, and broken edge references. Treat errors as must-fix. Treat warnings as layout issues to improve unless the graph is intentionally dense.
 
+Use this repair loop:
+
+1. Generate the HTML.
+2. Run the validator.
+3. If there are any `errors`, revise node coordinates, canvas size, edge routing, or labels, then run the validator again.
+4. Do not return the page while errors remain.
+5. If there are warnings, make at least one layout improvement pass. Prioritize warnings in this order: node overlap, edge through unrelated node, edge label covering node, edge crossing, node spacing under 48px.
+6. Run the validator again after the improvement pass and summarize any remaining warnings if they cannot be reasonably eliminated.
+
 See `references/protocol-v1.md` for the full model shape and `assets/example-editable-page.html` for a compact example.

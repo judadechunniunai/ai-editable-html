@@ -59,4 +59,13 @@ If the project resources are installed, run this before returning HTML:
 node .cursor/ai-editable-html/scripts/validate_editable_html.js path/to/page.html
 ```
 
+Repair loop:
+
+1. Generate the HTML.
+2. Run the validator.
+3. If there are any errors, revise node coordinates, canvas size, edge routing, or labels, then run the validator again.
+4. Do not return the page while errors remain.
+5. If there are warnings, make at least one layout improvement pass. Prioritize: node overlap, edge through unrelated node, edge label covering node, edge crossing, node spacing under 48px.
+6. Run the validator again after the improvement pass.
+
 Before returning HTML, verify that the model parses as JSON, selectors resolve, every edge references existing node IDs, and the validator has no errors.
