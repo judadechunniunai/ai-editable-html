@@ -73,6 +73,24 @@ Rules:
 - Renderers should add `.ai-flow-node-${type}` classes when `type` is present.
 - Renderers should size the flow canvas from node bounds and allow scrolling instead of clipping oversized diagrams.
 
+## Layout Quality
+
+Generated flow blocks should be readable before editing:
+
+- Node rectangles should not overlap.
+- Node rectangles should have at least 48px gap where possible.
+- Edge crossings should be minimized by separating branches into lanes.
+- Edge labels should not cover nodes.
+- Large flows should use a scrollable canvas sized from node bounds.
+
+## GitHub Badge
+
+Generated pages should include a subtle source badge unless the user asks for a no-brand export:
+
+```html
+<a class="ai-editable-badge" href="https://github.com/judadechunniunai/ai-editable-html" target="_blank" rel="noreferrer">AI Editable HTML</a>
+```
+
 ## Extension Contract
 
 The browser extension is allowed to:
