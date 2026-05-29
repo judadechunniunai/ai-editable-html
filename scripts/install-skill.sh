@@ -20,9 +20,15 @@ else
   fi
   temp_dir="$(mktemp -d)"
   zip_path="$temp_dir/repo.zip"
-  curl -fsSL "https://github.com/$repo/archive/refs/heads/$ref.zip" -o "$zip_path"
+  echo "Downloading $repo@$ref from GitHub..."
+  curl -fsSL \
+    -H "Cache-Control: no-cache" \
+    -H "Pragma: no-cache" \
+    "https://codeload.github.com/$repo/zip/refs/heads/$ref" \
+    -o "$zip_path"
   unzip -q "$zip_path" -d "$temp_dir/repo"
   repo_root="$(find "$temp_dir/repo" -mindepth 1 -maxdepth 1 -type d | head -n 1)"
+  echo "Using repository source $repo_root"
 fi
 
 install_codex() {

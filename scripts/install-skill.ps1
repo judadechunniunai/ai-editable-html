@@ -24,12 +24,19 @@ function Get-RepoRoot {
   $zipPath = Join-Path $tempRoot "repo.zip"
   $extractPath = Join-Path $tempRoot "repo"
   New-Item -ItemType Directory -Force -Path $tempRoot | Out-Null
-  Invoke-WebRequest -UseBasicParsing -Uri "https://github.com/$Repo/archive/refs/heads/$Ref.zip" -OutFile $zipPath
+  $archiveUri = "https://codeload.github.com/$Repo/zip/refs/heads/$Ref"
+  Write-Host "Downloading $Repo@$Ref from GitHub..."
+  Invoke-WebRequest `
+    -UseBasicParsing `
+    -Headers @{ "Cache-Control" = "no-cache"; "Pragma" = "no-cache" } `
+    -Uri $archiveUri `
+    -OutFile $zipPath
   Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force
   $root = Get-ChildItem -Path $extractPath -Directory | Select-Object -First 1
   if (!$root) {
     throw "Downloaded repository archive is empty."
   }
+  Write-Host "Using repository source $($root.FullName)"
   return $root.FullName
 }
 
