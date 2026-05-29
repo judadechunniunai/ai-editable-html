@@ -13,6 +13,8 @@
     mode: "select",
     linkSource: null,
     nodeType: "action",
+    editing: false,
+    keyboardShortcutsReady: false,
     undoStack: [],
     redoStack: [],
     historyLimit: 100,
@@ -656,7 +658,10 @@
   }
 
   function initKeyboardShortcuts() {
+    if (state.keyboardShortcutsReady) return;
+    state.keyboardShortcutsReady = true;
     document.addEventListener("keydown", function (event) {
+      if (!state.editing) return;
       var key = String(event.key || "").toLowerCase();
       if (!(event.ctrlKey || event.metaKey) || event.altKey) return;
       if (event.target && event.target.closest && event.target.closest("[contenteditable='true']")) return;
@@ -670,12 +675,31 @@
     }, true);
   }
 
+  function buildEditLauncher() {
+    var button = document.createElement("button");
+    button.type = "button";
+    button.className = "aieh-edit-launcher";
+    button.textContent = "Edit";
+    button.title = "Enter AI Editable HTML edit mode";
+    button.addEventListener("click", function () {
+      startEditing(button);
+    });
+    document.documentElement.appendChild(button);
+  }
+
+  function startEditing(launcher) {
+    if (state.editing) return;
+    state.editing = true;
+    if (launcher) launcher.remove();
+    ensureTextBlocksFromDom();
+    initTextEditing();
+    initKeyboardShortcuts();
+    renderAllFlows();
+    buildToolbar();
+    toast("AI Editable HTML editor enabled.");
+  }
+
   parseModel();
   if (!state.model) return;
-  ensureTextBlocksFromDom();
-  initTextEditing();
-  initKeyboardShortcuts();
-  renderAllFlows();
-  buildToolbar();
-  toast("AI Editable HTML editor enabled.");
+  buildEditLauncher();
 })();

@@ -141,6 +141,8 @@ Then:
 4. Select the unzipped extension folder, or select `chrome-extension/` from a cloned repo.
 5. If editing local `file://` files, enable Allow access to file URLs.
 
+When the extension is enabled, pages stay in read-only HTML mode by default. Click the floating `Edit` button to enter edit mode.
+
 ## Usage
 
 Ask an agent with the installed skill/rule to generate an editable single-file HTML page.
