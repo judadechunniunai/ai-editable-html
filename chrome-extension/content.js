@@ -12,7 +12,12 @@
     selectedNodeId: "",
     mode: "select",
     linkSource: null,
-    nodeType: "action"
+    nodeType: "action",
+    undoStack: [],
+    redoStack: [],
+    historyLimit: 100,
+    restoring: false,
+    activeEditSnapshot: null
   };
 
   function parseModel() {
@@ -26,6 +31,71 @@
 
   function writeModel() {
     modelEl.textContent = "\n" + JSON.stringify(state.model, null, 2) + "\n";
+  }
+
+  function modelSnapshot() {
+    return JSON.stringify(state.model);
+  }
+
+  function pushHistory(previousSnapshot) {
+    var currentSnapshot = modelSnapshot();
+    if (!previousSnapshot || previousSnapshot === currentSnapshot || state.restoring) return;
+    state.undoStack.push(previousSnapshot);
+    if (state.undoStack.length > state.historyLimit) state.undoStack.shift();
+    state.redoStack = [];
+    updateHistoryButtons();
+  }
+
+  function restoreSnapshot(snapshot) {
+    if (!snapshot) return;
+    try {
+      state.restoring = true;
+      state.model = JSON.parse(snapshot);
+      writeModel();
+      applyTextBlocksToDom();
+      renderAllFlows();
+    } catch (error) {
+      toast("Cannot restore edit history.");
+    } finally {
+      state.restoring = false;
+      updateHistoryButtons();
+    }
+  }
+
+  function undoEdit() {
+    var activeSnapshot = state.activeEditSnapshot;
+    if (activeSnapshot && activeSnapshot !== modelSnapshot()) {
+      state.redoStack.push(modelSnapshot());
+      state.activeEditSnapshot = null;
+      restoreSnapshot(activeSnapshot);
+      toast("Undo");
+      return;
+    }
+    if (!state.undoStack.length) return;
+    var currentSnapshot = modelSnapshot();
+    var previousSnapshot = state.undoStack.pop();
+    state.redoStack.push(currentSnapshot);
+    restoreSnapshot(previousSnapshot);
+    toast("Undo");
+  }
+
+  function redoEdit() {
+    if (!state.redoStack.length) return;
+    state.activeEditSnapshot = null;
+    var currentSnapshot = modelSnapshot();
+    var nextSnapshot = state.redoStack.pop();
+    state.undoStack.push(currentSnapshot);
+    restoreSnapshot(nextSnapshot);
+    toast("Redo");
+  }
+
+  function updateHistoryButtons() {
+    document.querySelectorAll("[data-aieh-history='undo']").forEach(function (button) {
+      button.disabled = !state.undoStack.length;
+    });
+    document.querySelectorAll("[data-aieh-history='redo']").forEach(function (button) {
+      button.disabled = !state.redoStack.length;
+    });
   }
 
   function ensureTextBlocksFromDom() {
@@ -115,16 +185,38 @@
     blocks("text").forEach(function (block) {
       var el = document.querySelector(block.selector);
       if (!el) return;
+      var editStartSnapshot = null;
       el.classList.add("aieh-editable-text");
       el.setAttribute("contenteditable", "true");
       el.setAttribute("spellcheck", "true");
       if (block.format === "html" && block.content && el.innerHTML.trim() !== String(block.content).trim()) {
         el.innerHTML = block.content;
       }
+      el.addEventListener("focus", function () {
+        editStartSnapshot = modelSnapshot();
+        state.activeEditSnapshot = editStartSnapshot;
+      });
       el.addEventListener("input", function () {
         block.content = block.format === "html" ? el.innerHTML : el.textContent;
         writeModel();
       });
+      el.addEventListener("blur", function () {
+        pushHistory(editStartSnapshot);
+        if (state.activeEditSnapshot === editStartSnapshot) state.activeEditSnapshot = null;
+        editStartSnapshot = null;
+      });
+    });
+  }
+
+  function applyTextBlocksToDom() {
+    blocks("text").forEach(function (block) {
+      var el = document.querySelector(block.selector);
+      if (!el) return;
+      if (block.format === "html") {
+        if (el.innerHTML !== String(block.content || "")) el.innerHTML = block.content || "";
+      } else if (el.textContent !== String(block.content || "")) {
+        el.textContent = block.content || "";
+      }
     });
   }
 
@@ -170,8 +262,10 @@
       line.addEventListener("click", function (event) {
         event.stopPropagation();
         if (state.mode === "delete") {
+          var beforeDeleteEdge = modelSnapshot();
           flow.edges = edges.filter(function (candidate) { return candidate.id !== edge.id; });
           writeModel();
+          pushHistory(beforeDeleteEdge);
           renderFlow(flow);
         }
       });
@@ -184,17 +278,23 @@
       label.setAttribute("spellcheck", "true");
       label.style.left = ((a.x + b.x) / 2) + "px";
       label.style.top = ((a.y + b.y) / 2) + "px";
+      var edgeEditStartSnapshot = null;
       label.addEventListener("input", function () {
         edge.label = label.textContent;
         label.classList.toggle("is-empty", !edge.label);
         writeModel();
       });
       label.addEventListener("focus", function () {
+        edgeEditStartSnapshot = modelSnapshot();
+        state.activeEditSnapshot = edgeEditStartSnapshot;
         label.classList.add("aieh-editing-inline");
       });
       label.addEventListener("blur", function () {
         label.classList.remove("aieh-editing-inline");
         label.classList.toggle("is-empty", !label.textContent);
+        pushHistory(edgeEditStartSnapshot);
+        if (state.activeEditSnapshot === edgeEditStartSnapshot) state.activeEditSnapshot = null;
+        edgeEditStartSnapshot = null;
       });
       label.addEventListener("click", function (event) {
         event.stopPropagation();
@@ -215,6 +315,7 @@
       el.style.height = Number(node.height || 56) + "px";
       if (state.linkSource === node.id) el.classList.add("is-link-source");
       if (state.selectedFlowId === flow.id && state.selectedNodeId === node.id) el.classList.add("is-selected");
+      var nodeEditStartSnapshot = null;
 
       el.addEventListener("input", function () {
         node.label = el.textContent;
@@ -222,11 +323,16 @@
       });
 
       el.addEventListener("focus", function () {
+        nodeEditStartSnapshot = modelSnapshot();
+        state.activeEditSnapshot = nodeEditStartSnapshot;
         el.classList.add("aieh-editing-inline");
       });
 
       el.addEventListener("blur", function () {
         el.classList.remove("aieh-editing-inline");
+        pushHistory(nodeEditStartSnapshot);
+        if (state.activeEditSnapshot === nodeEditStartSnapshot) state.activeEditSnapshot = null;
+        nodeEditStartSnapshot = null;
       });
 
       el.addEventListener("click", function (event) {
@@ -236,11 +342,13 @@
         if (state.mode === "edge") {
           handleEdgeClick(flow, node.id);
         } else if (state.mode === "delete") {
+          var beforeDelete = modelSnapshot();
           flow.nodes = nodes.filter(function (candidate) { return candidate.id !== node.id; });
           flow.edges = edges.filter(function (edge) { return edge.source !== node.id && edge.target !== node.id; });
           state.linkSource = null;
           state.selectedNodeId = "";
           writeModel();
+          pushHistory(beforeDelete);
           renderFlow(flow);
         } else {
           container.querySelectorAll(".aieh-node.is-selected").forEach(function (selected) {
@@ -257,6 +365,7 @@
         var startY = event.clientY;
         var baseX = Number(node.x || 0);
         var baseY = Number(node.y || 0);
+        var beforeDrag = modelSnapshot();
         var dragging = false;
 
         function move(moveEvent) {
@@ -275,7 +384,10 @@
         function up() {
           el.removeEventListener("pointermove", move);
           el.removeEventListener("pointerup", up);
-          if (dragging) writeModel();
+          if (dragging) {
+            writeModel();
+            pushHistory(beforeDrag);
+          }
         }
 
         el.addEventListener("pointermove", move);
@@ -318,9 +430,11 @@
       return;
     }
     var edgeId = makeId(state.linkSource + "_to_" + nodeId, flow.edges || []);
+    var beforeEdge = modelSnapshot();
     flow.edges.push({ id: edgeId, source: state.linkSource, target: nodeId, label: "" });
     state.linkSource = null;
     writeModel();
+    pushHistory(beforeEdge);
     renderFlow(flow);
   }
 
@@ -345,10 +459,12 @@
       height: dimensions.height,
       type: state.nodeType
     };
+    var beforeAdd = modelSnapshot();
     flow.nodes.push(node);
     state.selectedFlowId = flow.id;
     state.selectedNodeId = node.id;
     writeModel();
+    pushHistory(beforeAdd);
     renderFlow(flow);
   }
 
@@ -360,11 +476,13 @@
     }
     var node = nodeById(flow, state.selectedNodeId);
     if (!node) return;
+    var beforeScale = modelSnapshot();
     var width = Number(node.width || 140);
     var height = Number(node.height || 56);
     node.width = Math.max(40, Math.round(width * factor));
     node.height = Math.max(24, Math.round(height * factor));
     writeModel();
+    pushHistory(beforeScale);
     renderFlow(flow);
   }
 
@@ -468,6 +586,24 @@
     sizeGroup.appendChild(grow);
     toolbar.appendChild(sizeGroup);
 
+    var historyGroup = document.createElement("div");
+    historyGroup.className = "aieh-toolbar-group";
+
+    var undo = document.createElement("button");
+    undo.textContent = "Undo";
+    undo.title = "Undo (Ctrl+Z)";
+    undo.dataset.aiehHistory = "undo";
+    undo.addEventListener("click", undoEdit);
+    historyGroup.appendChild(undo);
+
+    var redo = document.createElement("button");
+    redo.textContent = "Redo";
+    redo.title = "Redo (Ctrl+Y)";
+    redo.dataset.aiehHistory = "redo";
+    redo.addEventListener("click", redoEdit);
+    historyGroup.appendChild(redo);
+    toolbar.appendChild(historyGroup);
+
     var save = document.createElement("button");
     save.textContent = "Download";
     save.addEventListener("click", downloadHtml);
@@ -475,12 +611,28 @@
 
     document.documentElement.appendChild(toolbar);
     setMode("select");
+    updateHistoryButtons();
+  }
+
+  function initKeyboardShortcuts() {
+    document.addEventListener("keydown", function (event) {
+      var key = String(event.key || "").toLowerCase();
+      if (!(event.ctrlKey || event.metaKey) || event.altKey) return;
+      if (key === "z" && !event.shiftKey) {
+        event.preventDefault();
+        undoEdit();
+      } else if (key === "y" || (key === "z" && event.shiftKey)) {
+        event.preventDefault();
+        redoEdit();
+      }
+    }, true);
   }
 
   parseModel();
   if (!state.model) return;
   ensureTextBlocksFromDom();
   initTextEditing();
+  initKeyboardShortcuts();
   renderAllFlows();
   buildToolbar();
   toast("AI Editable HTML editor enabled.");

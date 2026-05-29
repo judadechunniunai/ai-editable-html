@@ -36,6 +36,11 @@
   cursor: pointer;
 }
 
+.aieh-toolbar button:disabled {
+  cursor: not-allowed;
+  opacity: .45;
+}
+
 .aieh-toolbar button.is-active {
   border-color: #2563eb;
   background: #dbeafe;
