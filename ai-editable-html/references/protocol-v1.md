@@ -12,6 +12,22 @@
 
 Supported block types are `text` and `flow`.
 
+## Runtime And Validator
+
+- `assets/runtime-v1.js` is the page runtime. Inline it into the final HTML when flow blocks exist.
+- Do not reference `runtime-v1.js` by relative path in final shared HTML, because `file://` pages often fail to load local relative resources across environments.
+- `scripts/validate_editable_html.js` is a generation-time checker. Do not include it with `<script>` in final HTML.
+
+## JSON Safety
+
+The `#ai-editable-html-model` script must be valid JSON:
+
+- Generate it with `JSON.stringify` when possible.
+- Escape internal double quotes as `\"`.
+- Escape backslashes as `\\`.
+- Encode line breaks inside strings as `\n`.
+- Chinese text may be direct UTF-8 or `\uXXXX` escapes.
+
 ## Text Block
 
 ```json

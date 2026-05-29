@@ -28,10 +28,12 @@ Always produce one complete HTML document. The document must:
 - Add every `data-edit-id` element to the JSON model. Include body copy, captions, lists, and explanatory sections, not only headings.
 - Give every editable flow container a stable `data-flow-id`.
 - Keep flowchart data in the JSON model, not only in SVG or canvas.
-- Include the runtime from `assets/runtime-v1.js` inline before `</body>` when the page contains a flow block.
+- Inline the contents of `assets/runtime-v1.js` into the final HTML before `</body>` when the page contains a flow block. Do not use `<script src="runtime-v1.js">` or any other external runtime path in the final page.
 - Add a subtle fixed bottom-right GitHub badge linking to `https://github.com/judadechunniunai/ai-editable-html`, unless the user explicitly asks for a clean or no-brand export.
 - Avoid minifying the model JSON. Keep it readable.
 - Do not place pre-rendered node DOM, static flow SVG, or custom drag scripts inside editable flow containers. The runtime and browser extension must be the only code that renders or edits flow nodes.
+- Do not include `scripts/validate_editable_html.js` in the final HTML. It is a generation-time checker, not a page runtime dependency.
+- Generate the model JSON with a real JSON serializer such as `JSON.stringify`. Never hand-concatenate JSON strings.
 
 ## Editable Text Blocks
 
@@ -65,6 +67,29 @@ For editable rich text containers, preserve markup with `format: "html"`:
   "format": "html",
   "content": "<p>Editable paragraph.</p><ol><li>Editable list item.</li></ol>"
 }
+```
+
+## JSON Safety
+
+The model script must contain valid JSON. This is especially important for Chinese text and quoted phrases.
+
+- Use UTF-8 Chinese directly or JSON unicode escapes such as `\u4e2d\u6587`; both are acceptable.
+- Escape internal double quotes as `\"`.
+- Escape backslashes as `\\`.
+- Encode line breaks inside strings as `\n`, or store rich text as one serialized HTML string.
+- Do not paste raw HTML into JSON without escaping quotes.
+- Prefer building the model as a JavaScript object and serializing with `JSON.stringify(model, null, 2)`.
+
+Bad:
+
+```json
+{ "content": "提示"不可示闲"" }
+```
+
+Good:
+
+```json
+{ "content": "提示\"不可示闲\"" }
 ```
 
 ## Editable Flow Blocks
@@ -189,7 +214,7 @@ Before returning HTML:
 - The inline runtime is present when flow blocks exist.
 - The page remains useful if the browser extension is not installed.
 
-When local execution is available, run the bundled validator before returning the file:
+When local execution is available, run the bundled validator before returning the file. This checker is not part of the delivered HTML:
 
 ```bash
 node ai-editable-html/scripts/validate_editable_html.js path/to/page.html

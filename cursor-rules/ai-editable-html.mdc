@@ -15,8 +15,10 @@ Requirements:
 - Store flowchart nodes and edges in the JSON model.
 - Use plain text labels and stable lower_snake_case IDs.
 - Do not render editable flows only as static SVG or canvas.
-- Include or inline the v1 runtime when the page contains flow blocks.
+- Inline the v1 runtime when the page contains flow blocks. Do not use external `<script src="runtime-v1.js">` in the final HTML.
 - Add the subtle GitHub badge unless the user asks for no branding.
+- Do not include the validator script in the final HTML. It is only for post-generation checks.
+- Generate the JSON model with a real JSON serializer. Escape quotes, backslashes, and line breaks correctly.
 
 Text block shape:
 
