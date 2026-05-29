@@ -17,7 +17,8 @@
     redoStack: [],
     historyLimit: 100,
     restoring: false,
-    activeEditSnapshot: null
+    activeEditSnapshot: null,
+    activeEditCommit: null
   };
 
   function parseModel() {
@@ -46,6 +47,10 @@
     updateHistoryButtons();
   }
 
+  function commitActiveEdit() {
+    if (typeof state.activeEditCommit === "function") state.activeEditCommit();
+  }
+
   function restoreSnapshot(snapshot) {
     if (!snapshot) return;
     try {
@@ -63,10 +68,12 @@
   }
 
   function undoEdit() {
+    commitActiveEdit();
     var activeSnapshot = state.activeEditSnapshot;
     if (activeSnapshot && activeSnapshot !== modelSnapshot()) {
       state.redoStack.push(modelSnapshot());
       state.activeEditSnapshot = null;
+      state.activeEditCommit = null;
       restoreSnapshot(activeSnapshot);
       toast("Undo");
       return;
@@ -80,8 +87,10 @@
   }
 
   function redoEdit() {
+    commitActiveEdit();
     if (!state.redoStack.length) return;
     state.activeEditSnapshot = null;
+    state.activeEditCommit = null;
     var currentSnapshot = modelSnapshot();
     var nextSnapshot = state.redoStack.pop();
     state.undoStack.push(currentSnapshot);
@@ -90,8 +99,12 @@
   }
 
   function updateHistoryButtons() {
+    var hasActiveUndo = !!(
+      state.activeEditSnapshot &&
+      state.activeEditSnapshot !== modelSnapshot()
+    );
     document.querySelectorAll("[data-aieh-history='undo']").forEach(function (button) {
-      button.disabled = !state.undoStack.length;
+      button.disabled = !state.undoStack.length && !hasActiveUndo;
     });
     document.querySelectorAll("[data-aieh-history='redo']").forEach(function (button) {
       button.disabled = !state.redoStack.length;
@@ -195,14 +208,23 @@
       el.addEventListener("focus", function () {
         editStartSnapshot = modelSnapshot();
         state.activeEditSnapshot = editStartSnapshot;
+        state.activeEditCommit = function () {
+          block.content = block.format === "html" ? el.innerHTML : el.textContent;
+          writeModel();
+        };
       });
       el.addEventListener("input", function () {
         block.content = block.format === "html" ? el.innerHTML : el.textContent;
         writeModel();
+        updateHistoryButtons();
       });
       el.addEventListener("blur", function () {
+        if (state.activeEditSnapshot === editStartSnapshot) commitActiveEdit();
         pushHistory(editStartSnapshot);
-        if (state.activeEditSnapshot === editStartSnapshot) state.activeEditSnapshot = null;
+        if (state.activeEditSnapshot === editStartSnapshot) {
+          state.activeEditSnapshot = null;
+          state.activeEditCommit = null;
+        }
         editStartSnapshot = null;
       });
     });
@@ -283,17 +305,27 @@
         edge.label = label.textContent;
         label.classList.toggle("is-empty", !edge.label);
         writeModel();
+        updateHistoryButtons();
       });
       label.addEventListener("focus", function () {
         edgeEditStartSnapshot = modelSnapshot();
         state.activeEditSnapshot = edgeEditStartSnapshot;
+        state.activeEditCommit = function () {
+          edge.label = label.textContent;
+          label.classList.toggle("is-empty", !edge.label);
+          writeModel();
+        };
         label.classList.add("aieh-editing-inline");
       });
       label.addEventListener("blur", function () {
         label.classList.remove("aieh-editing-inline");
+        if (state.activeEditSnapshot === edgeEditStartSnapshot) commitActiveEdit();
         label.classList.toggle("is-empty", !label.textContent);
         pushHistory(edgeEditStartSnapshot);
-        if (state.activeEditSnapshot === edgeEditStartSnapshot) state.activeEditSnapshot = null;
+        if (state.activeEditSnapshot === edgeEditStartSnapshot) {
+          state.activeEditSnapshot = null;
+          state.activeEditCommit = null;
+        }
         edgeEditStartSnapshot = null;
       });
       label.addEventListener("click", function (event) {
@@ -320,18 +352,27 @@
       el.addEventListener("input", function () {
         node.label = el.textContent;
         writeModel();
+        updateHistoryButtons();
       });
 
       el.addEventListener("focus", function () {
         nodeEditStartSnapshot = modelSnapshot();
         state.activeEditSnapshot = nodeEditStartSnapshot;
+        state.activeEditCommit = function () {
+          node.label = el.textContent;
+          writeModel();
+        };
         el.classList.add("aieh-editing-inline");
       });
 
       el.addEventListener("blur", function () {
         el.classList.remove("aieh-editing-inline");
+        if (state.activeEditSnapshot === nodeEditStartSnapshot) commitActiveEdit();
         pushHistory(nodeEditStartSnapshot);
-        if (state.activeEditSnapshot === nodeEditStartSnapshot) state.activeEditSnapshot = null;
+        if (state.activeEditSnapshot === nodeEditStartSnapshot) {
+          state.activeEditSnapshot = null;
+          state.activeEditCommit = null;
+        }
         nodeEditStartSnapshot = null;
       });
 
@@ -618,6 +659,7 @@
     document.addEventListener("keydown", function (event) {
       var key = String(event.key || "").toLowerCase();
       if (!(event.ctrlKey || event.metaKey) || event.altKey) return;
+      if (event.target && event.target.closest && event.target.closest("[contenteditable='true']")) return;
       if (key === "z" && !event.shiftKey) {
         event.preventDefault();
         undoEdit();
