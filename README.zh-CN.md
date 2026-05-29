@@ -30,13 +30,15 @@ AI Editable HTML 是一套面向 AI 生成 HTML 的可编辑协议、Skill、校
 
 ## 安装 Codex Skill
 
-PowerShell:
+请按你的终端类型选择命令。PowerShell 示例用于 Windows PowerShell，zsh/bash 示例用于 macOS/Linux 终端。
+
+Windows PowerShell:
 
 ```powershell
 $repo="judadechunniunai/ai-editable-html"; $s="$env:TEMP\install-ai-editable-html.ps1"; iwr -UseB "https://raw.githubusercontent.com/$repo/main/scripts/install-skill.ps1" -OutFile $s; powershell -ExecutionPolicy Bypass -File $s -Repo $repo -Target codex
 ```
 
-macOS/Linux:
+macOS/Linux zsh/bash:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/judadechunniunai/ai-editable-html/main/scripts/install-skill.sh | bash -s -- judadechunniunai/ai-editable-html codex
@@ -52,8 +54,19 @@ curl -fsSL https://raw.githubusercontent.com/judadechunniunai/ai-editable-html/m
 
 在 Cursor 项目目录里运行：
 
+Windows PowerShell:
+
 ```powershell
 $repo="judadechunniunai/ai-editable-html"; $s="$env:TEMP\install-ai-editable-html.ps1"; iwr -UseB "https://raw.githubusercontent.com/$repo/main/scripts/install-skill.ps1" -OutFile $s; powershell -ExecutionPolicy Bypass -File $s -Repo $repo -Target cursor -CursorProject .
+```
+
+macOS/Linux zsh/bash:
+
+```bash
+repo="judadechunniunai/ai-editable-html"
+s="/tmp/install-ai-editable-html.sh"
+curl -fsSL "https://raw.githubusercontent.com/$repo/main/scripts/install-skill.sh" -o "$s"
+bash "$s" "$repo" cursor main .
 ```
 
 会安装到：
@@ -67,8 +80,19 @@ $repo="judadechunniunai/ai-editable-html"; $s="$env:TEMP\install-ai-editable-htm
 
 在 Trae 项目目录里运行：
 
+Windows PowerShell:
+
 ```powershell
 $repo="judadechunniunai/ai-editable-html"; $s="$env:TEMP\install-ai-editable-html.ps1"; iwr -UseB "https://raw.githubusercontent.com/$repo/main/scripts/install-skill.ps1" -OutFile $s; powershell -ExecutionPolicy Bypass -File $s -Repo $repo -Target trae -TraeProject .
+```
+
+macOS/Linux zsh/bash:
+
+```bash
+repo="judadechunniunai/ai-editable-html"
+s="/tmp/install-ai-editable-html.sh"
+curl -fsSL "https://raw.githubusercontent.com/$repo/main/scripts/install-skill.sh" -o "$s"
+bash "$s" "$repo" trae main .
 ```
 
 会安装到：
@@ -82,8 +106,19 @@ $repo="judadechunniunai/ai-editable-html"; $s="$env:TEMP\install-ai-editable-htm
 
 在 Claude Code 项目目录里运行：
 
+Windows PowerShell:
+
 ```powershell
 $repo="judadechunniunai/ai-editable-html"; $s="$env:TEMP\install-ai-editable-html.ps1"; iwr -UseB "https://raw.githubusercontent.com/$repo/main/scripts/install-skill.ps1" -OutFile $s; powershell -ExecutionPolicy Bypass -File $s -Repo $repo -Target claude -ClaudeProject .
+```
+
+macOS/Linux zsh/bash:
+
+```bash
+repo="judadechunniunai/ai-editable-html"
+s="/tmp/install-ai-editable-html.sh"
+curl -fsSL "https://raw.githubusercontent.com/$repo/main/scripts/install-skill.sh" -o "$s"
+bash "$s" "$repo" claude main .
 ```
 
 会安装到：

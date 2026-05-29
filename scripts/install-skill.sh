@@ -4,9 +4,10 @@ set -euo pipefail
 repo="${1:-judadechunniunai/ai-editable-html}"
 target="${2:-codex}"
 ref="${3:-main}"
+project_arg="${4:-$PWD}"
 cursor_project="${4:-$PWD}"
-trae_project="${5:-$PWD}"
-claude_project="${6:-$PWD}"
+trae_project="${5:-$project_arg}"
+claude_project="${6:-$project_arg}"
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd || true)"
 repo_root=""

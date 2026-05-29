@@ -29,13 +29,15 @@ It is useful when an AI-generated page contains flowcharts, diagrams, editable t
 
 ## Install The Codex Skill
 
-PowerShell:
+Use the command for your shell. The PowerShell snippets are for Windows PowerShell, and the zsh/bash snippets are for macOS/Linux terminals.
+
+Windows PowerShell:
 
 ```powershell
 $repo="judadechunniunai/ai-editable-html"; $s="$env:TEMP\install-ai-editable-html.ps1"; iwr -UseB "https://raw.githubusercontent.com/$repo/main/scripts/install-skill.ps1" -OutFile $s; powershell -ExecutionPolicy Bypass -File $s -Repo $repo -Target codex
 ```
 
-macOS/Linux:
+macOS/Linux zsh/bash:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/judadechunniunai/ai-editable-html/main/scripts/install-skill.sh | bash -s -- judadechunniunai/ai-editable-html codex
@@ -51,8 +53,19 @@ The installer copies the full skill to:
 
 Run this inside the Cursor project:
 
+Windows PowerShell:
+
 ```powershell
 $repo="judadechunniunai/ai-editable-html"; $s="$env:TEMP\install-ai-editable-html.ps1"; iwr -UseB "https://raw.githubusercontent.com/$repo/main/scripts/install-skill.ps1" -OutFile $s; powershell -ExecutionPolicy Bypass -File $s -Repo $repo -Target cursor -CursorProject .
+```
+
+macOS/Linux zsh/bash:
+
+```bash
+repo="judadechunniunai/ai-editable-html"
+s="/tmp/install-ai-editable-html.sh"
+curl -fsSL "https://raw.githubusercontent.com/$repo/main/scripts/install-skill.sh" -o "$s"
+bash "$s" "$repo" cursor main .
 ```
 
 This installs:
@@ -66,8 +79,19 @@ This installs:
 
 Run this inside the Trae project:
 
+Windows PowerShell:
+
 ```powershell
 $repo="judadechunniunai/ai-editable-html"; $s="$env:TEMP\install-ai-editable-html.ps1"; iwr -UseB "https://raw.githubusercontent.com/$repo/main/scripts/install-skill.ps1" -OutFile $s; powershell -ExecutionPolicy Bypass -File $s -Repo $repo -Target trae -TraeProject .
+```
+
+macOS/Linux zsh/bash:
+
+```bash
+repo="judadechunniunai/ai-editable-html"
+s="/tmp/install-ai-editable-html.sh"
+curl -fsSL "https://raw.githubusercontent.com/$repo/main/scripts/install-skill.sh" -o "$s"
+bash "$s" "$repo" trae main .
 ```
 
 This installs:
@@ -81,8 +105,19 @@ This installs:
 
 Run this inside the Claude Code project:
 
+Windows PowerShell:
+
 ```powershell
 $repo="judadechunniunai/ai-editable-html"; $s="$env:TEMP\install-ai-editable-html.ps1"; iwr -UseB "https://raw.githubusercontent.com/$repo/main/scripts/install-skill.ps1" -OutFile $s; powershell -ExecutionPolicy Bypass -File $s -Repo $repo -Target claude -ClaudeProject .
+```
+
+macOS/Linux zsh/bash:
+
+```bash
+repo="judadechunniunai/ai-editable-html"
+s="/tmp/install-ai-editable-html.sh"
+curl -fsSL "https://raw.githubusercontent.com/$repo/main/scripts/install-skill.sh" -o "$s"
+bash "$s" "$repo" claude main .
 ```
 
 This installs:
