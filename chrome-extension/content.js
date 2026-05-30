@@ -358,7 +358,7 @@
         var el = document.createElement("div");
         el.className = "ai-flow-node ai-flow-node-" + safeClass(node.type);
         el.dataset.nodeId = node.id;
-        el.textContent = node.label || node.id;
+        el.textContent = node.label || "";
         el.style.left = Number(node.x || 0) + "px";
         el.style.top = Number(node.y || 0) + "px";
         el.style.width = Number(node.width || 140) + "px";
@@ -382,8 +382,8 @@
     container.querySelectorAll(".is-selected").forEach(function (selected) {
       selected.classList.remove("is-selected");
     });
-    container.querySelectorAll(".aieh-resize-handle").forEach(function (handle) {
-      handle.remove();
+    container.querySelectorAll(".aieh-selection-box").forEach(function (box) {
+      box.remove();
     });
     var nodeEl = container.querySelector('.aieh-node[data-node-id="' + CSS.escape(nodeId) + '"]');
     if (nodeEl) {
@@ -400,8 +400,8 @@
     container.querySelectorAll(".is-selected").forEach(function (selected) {
       selected.classList.remove("is-selected");
     });
-    container.querySelectorAll(".aieh-resize-handle").forEach(function (handle) {
-      handle.remove();
+    container.querySelectorAll(".aieh-selection-box").forEach(function (box) {
+      box.remove();
     });
     container.querySelectorAll('[data-edge-id="' + CSS.escape(edgeId) + '"]').forEach(function (edgeEl) {
       edgeEl.classList.add("is-selected");
@@ -432,15 +432,26 @@
   }
 
   function addResizeHandle(nodeEl, flow, nodeId, container) {
-    if (nodeEl.querySelector(".aieh-resize-handle")) return;
+    container.querySelectorAll(".aieh-selection-box").forEach(function (box) {
+      box.remove();
+    });
+    var node = nodeById(flow, nodeId);
+    if (!node) return;
+    var box = document.createElement("div");
+    box.className = "aieh-selection-box";
+    box.style.left = Number(node.x || 0) + "px";
+    box.style.top = Number(node.y || 0) + "px";
+    box.style.width = Number(node.width || 140) + "px";
+    box.style.height = Number(node.height || 56) + "px";
     var handle = document.createElement("span");
     handle.className = "aieh-resize-handle";
     handle.title = "Drag to scale";
-    nodeEl.appendChild(handle);
+    box.appendChild(handle);
+    container.appendChild(box);
     handle.addEventListener("pointerdown", function (event) {
       event.preventDefault();
       event.stopPropagation();
-      var node = nodeById(flow, nodeId);
+      node = nodeById(flow, nodeId);
       if (!node) return;
       handle.setPointerCapture(event.pointerId);
       var startX = event.clientX;
@@ -462,6 +473,8 @@
         node.height = Math.max(24, Math.round(baseHeight * factor));
         nodeEl.style.width = node.width + "px";
         nodeEl.style.height = node.height + "px";
+        box.style.width = node.width + "px";
+        box.style.height = node.height + "px";
         updateLines(container, flow);
       }
 
@@ -477,6 +490,15 @@
       handle.addEventListener("pointermove", move);
       handle.addEventListener("pointerup", up);
     });
+  }
+
+  function updateSelectionBox(container, node) {
+    var box = container.querySelector(".aieh-selection-box");
+    if (!box || !node) return;
+    box.style.left = Number(node.x || 0) + "px";
+    box.style.top = Number(node.y || 0) + "px";
+    box.style.width = Number(node.width || 140) + "px";
+    box.style.height = Number(node.height || 56) + "px";
   }
 
   function renderFlow(flow) {
@@ -502,8 +524,8 @@
       container.querySelectorAll(".is-selected").forEach(function (selected) {
         selected.classList.remove("is-selected");
       });
-      container.querySelectorAll(".aieh-resize-handle").forEach(function (handle) {
-        handle.remove();
+      container.querySelectorAll(".aieh-selection-box").forEach(function (box) {
+        box.remove();
       });
     };
 
@@ -531,6 +553,7 @@
         if (state.mode === "delete") {
           var beforeDeleteEdge = modelSnapshot();
           flow.edges = edges.filter(function (candidate) { return candidate.id !== edge.id; });
+          state.selectedEdgeId = "";
           writeModel();
           pushHistory(beforeDeleteEdge);
           renderFlow(flow);
@@ -601,13 +624,10 @@
       el.style.height = Number(node.height || 56) + "px";
       var label = document.createElement("span");
       label.className = "aieh-node-label";
-      label.textContent = node.label || node.id;
+      label.textContent = node.label || "";
       el.appendChild(label);
       if (state.linkSource === node.id) el.classList.add("is-link-source");
-      if (state.selectedFlowId === flow.id && state.selectedNodeId === node.id) {
-        el.classList.add("is-selected");
-        addResizeHandle(el, flow, node.id, container);
-      }
+      if (state.selectedFlowId === flow.id && state.selectedNodeId === node.id) el.classList.add("is-selected");
       var nodeEditStartSnapshot = null;
 
       label.addEventListener("input", function () {
@@ -683,6 +703,7 @@
           node.y = Math.round(baseY + moveEvent.clientY - startY);
           el.style.left = node.x + "px";
           el.style.top = node.y + "px";
+          updateSelectionBox(container, node);
           updateLines(container, flow);
         }
 
@@ -700,6 +721,9 @@
       });
 
       container.appendChild(el);
+      if (state.selectedFlowId === flow.id && state.selectedNodeId === node.id) {
+        addResizeHandle(el, flow, node.id, container);
+      }
     });
   }
 

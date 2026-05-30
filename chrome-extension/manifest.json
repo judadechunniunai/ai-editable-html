@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "AI Editable HTML",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Edit ai-editable-html-v1 pages locally: text, flow nodes, and flow edges.",
   "action": {
     "default_title": "AI Editable HTML"
