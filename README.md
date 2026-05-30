@@ -6,6 +6,19 @@ AI Editable HTML is a protocol, skill, validator, and Chrome extension for makin
 
 It is useful when an AI-generated page contains flowcharts, diagrams, editable text, or documentation that needs small local changes.
 
+## Why Use This
+
+AI tools are good at generating HTML reports, workflow pages, diagrams, and documentation, but small follow-up changes can be surprisingly expensive. If a generated page is mostly right but one node is in the wrong place, one label is awkward, or one paragraph needs a quick correction, asking the AI to regenerate or patch the whole page costs time, tokens, and attention.
+
+AI Editable HTML keeps the AI-generated page as normal readable HTML, then lets you enter edit mode only when you need local changes.
+
+## Use Cases
+
+- You used AI to generate a web page, but a few details do not match what you wanted. Instead of writing another long prompt and waiting for a full regeneration, you can edit text, move flowchart nodes, adjust labels, and download the corrected HTML.
+- You asked an AI coding tool to modify code, run tests, and output a result page explaining what changed, what passed, and what failed. If the report is mostly useful but some wording, order, or diagram structure is off, you can fix the report directly.
+- You have a workflow that is currently described as a long Markdown file. With this protocol, the workflow can be represented as an editable flowchart page, so users can move nodes, rename steps, and adjust connections visually.
+- You want to share an AI-generated HTML artifact with teammates. They can read it as a normal page, and only enter edit mode when they need to make small local corrections.
+
 ## What Is Included
 
 - `ai-editable-html/`: Codex skill with the protocol, runtime, examples, references, and validator.
