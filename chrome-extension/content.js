@@ -10,11 +10,13 @@
     model: null,
     selectedFlowId: "",
     selectedNodeId: "",
+    selectedEdgeId: "",
     mode: "select",
     linkSource: null,
     nodeType: "action",
     editing: false,
     keyboardShortcutsReady: false,
+    loadedSnapshot: false,
     undoStack: [],
     redoStack: [],
     historyLimit: 100,
@@ -26,6 +28,12 @@
   function parseModel() {
     try {
       state.model = JSON.parse(modelEl.textContent);
+      var savedModel = loadSavedSnapshot();
+      if (savedModel) {
+        state.model = savedModel;
+        state.loadedSnapshot = true;
+        writeModel();
+      }
     } catch (error) {
       toast("Invalid ai-editable-html model JSON.");
       state.model = null;
@@ -34,6 +42,34 @@
 
   function writeModel() {
     modelEl.textContent = "\n" + JSON.stringify(state.model, null, 2) + "\n";
+    saveSnapshot();
+  }
+
+  function snapshotKey() {
+    return "aieh:snapshot:" + location.href.split("#")[0];
+  }
+
+  function loadSavedSnapshot() {
+    try {
+      var raw = window.localStorage && window.localStorage.getItem(snapshotKey());
+      if (!raw) return null;
+      var payload = JSON.parse(raw);
+      return payload && payload.model && Array.isArray(payload.model.blocks) ? payload.model : null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function saveSnapshot() {
+    try {
+      if (!window.localStorage || !state.model) return;
+      window.localStorage.setItem(snapshotKey(), JSON.stringify({
+        savedAt: new Date().toISOString(),
+        model: state.model
+      }));
+    } catch (error) {
+      // Some file:// pages or privacy settings block localStorage.
+    }
   }
 
   function modelSnapshot() {
@@ -60,7 +96,11 @@
       state.model = JSON.parse(snapshot);
       writeModel();
       applyTextBlocksToDom();
-      renderAllFlows();
+      if (state.editing) {
+        renderAllFlows();
+      } else {
+        renderReadOnlyFlows();
+      }
     } catch (error) {
       toast("Cannot restore edit history.");
     } finally {
@@ -180,6 +220,10 @@
     };
   }
 
+  function textBlockById(id) {
+    return blocks("text").find(function (block) { return block.id === id; }) || null;
+  }
+
   function makeId(prefix, list) {
     var used = {};
     list.forEach(function (item) { used[item.id] = true; });
@@ -207,16 +251,20 @@
       if (block.format === "html" && block.content && el.innerHTML.trim() !== String(block.content).trim()) {
         el.innerHTML = block.content;
       }
+      if (el.dataset.aiehTextReady === "true") return;
+      el.dataset.aiehTextReady = "true";
       el.addEventListener("focus", function () {
+        var currentBlock = textBlockById(block.id) || block;
         editStartSnapshot = modelSnapshot();
         state.activeEditSnapshot = editStartSnapshot;
         state.activeEditCommit = function () {
-          block.content = block.format === "html" ? el.innerHTML : el.textContent;
+          currentBlock.content = currentBlock.format === "html" ? el.innerHTML : el.textContent;
           writeModel();
         };
       });
       el.addEventListener("input", function () {
-        block.content = block.format === "html" ? el.innerHTML : el.textContent;
+        var currentBlock = textBlockById(block.id) || block;
+        currentBlock.content = currentBlock.format === "html" ? el.innerHTML : el.textContent;
         writeModel();
         updateHistoryButtons();
       });
@@ -229,6 +277,15 @@
         }
         editStartSnapshot = null;
       });
+    });
+  }
+
+  function stopTextEditing() {
+    blocks("text").forEach(function (block) {
+      var el = document.querySelector(block.selector);
+      if (!el) return;
+      el.classList.remove("aieh-editable-text");
+      el.removeAttribute("contenteditable");
     });
   }
 
@@ -248,6 +305,180 @@
     blocks("flow").forEach(renderFlow);
   }
 
+  function renderReadOnlyFlows() {
+    blocks("flow").forEach(function (flow) {
+      var container = document.querySelector(flow.selector);
+      if (!container) return;
+      container.classList.remove("aieh-flow-editor");
+      container.classList.add("ai-editable-flow-rendered");
+      container.onclick = null;
+      container.style.position = container.style.position || "relative";
+      container.style.overflow = "auto";
+
+      var nodes = Array.isArray(flow.nodes) ? flow.nodes : [];
+      var edges = Array.isArray(flow.edges) ? flow.edges : [];
+      var bounds = flowBounds(nodes);
+      var width = Math.max(container.clientWidth || 640, bounds.width, 320);
+      var height = Math.max(container.clientHeight || 320, bounds.height, 240);
+      var byId = {};
+      nodes.forEach(function (node) { byId[node.id] = node; });
+      container.style.minWidth = width + "px";
+      container.style.minHeight = height + "px";
+      container.innerHTML = "";
+
+      var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("class", "ai-flow-lines");
+      svg.setAttribute("viewBox", "0 0 " + width + " " + height);
+      svg.setAttribute("preserveAspectRatio", "none");
+      container.appendChild(svg);
+
+      edges.forEach(function (edge) {
+        var source = byId[edge.source];
+        var target = byId[edge.target];
+        if (!source || !target) return;
+        var a = center(source);
+        var b = center(target);
+        var line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", a.x);
+        line.setAttribute("y1", a.y);
+        line.setAttribute("x2", b.x);
+        line.setAttribute("y2", b.y);
+        svg.appendChild(line);
+        if (edge.label) {
+          var label = document.createElement("div");
+          label.className = "ai-flow-edge-label";
+          label.textContent = edge.label;
+          label.style.left = ((a.x + b.x) / 2) + "px";
+          label.style.top = ((a.y + b.y) / 2) + "px";
+          container.appendChild(label);
+        }
+      });
+
+      nodes.forEach(function (node) {
+        var el = document.createElement("div");
+        el.className = "ai-flow-node ai-flow-node-" + safeClass(node.type);
+        el.dataset.nodeId = node.id;
+        el.textContent = node.label || node.id;
+        el.style.left = Number(node.x || 0) + "px";
+        el.style.top = Number(node.y || 0) + "px";
+        el.style.width = Number(node.width || 140) + "px";
+        el.style.height = Number(node.height || 56) + "px";
+        container.appendChild(el);
+      });
+    });
+  }
+
+  function clearInlineEditTarget() {
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    state.activeEditSnapshot = null;
+    state.activeEditCommit = null;
+  }
+
+  function selectNode(flow, nodeId, container) {
+    clearInlineEditTarget();
+    state.selectedFlowId = flow.id;
+    state.selectedNodeId = nodeId;
+    state.selectedEdgeId = "";
+    container.querySelectorAll(".is-selected").forEach(function (selected) {
+      selected.classList.remove("is-selected");
+    });
+    container.querySelectorAll(".aieh-resize-handle").forEach(function (handle) {
+      handle.remove();
+    });
+    var nodeEl = container.querySelector('.aieh-node[data-node-id="' + CSS.escape(nodeId) + '"]');
+    if (nodeEl) {
+      nodeEl.classList.add("is-selected");
+      addResizeHandle(nodeEl, flow, nodeId, container);
+    }
+  }
+
+  function selectEdge(flow, edgeId, container) {
+    clearInlineEditTarget();
+    state.selectedFlowId = flow.id;
+    state.selectedNodeId = "";
+    state.selectedEdgeId = edgeId;
+    container.querySelectorAll(".is-selected").forEach(function (selected) {
+      selected.classList.remove("is-selected");
+    });
+    container.querySelectorAll(".aieh-resize-handle").forEach(function (handle) {
+      handle.remove();
+    });
+    container.querySelectorAll('[data-edge-id="' + CSS.escape(edgeId) + '"]').forEach(function (edgeEl) {
+      edgeEl.classList.add("is-selected");
+    });
+  }
+
+  function removeSelectedItem() {
+    var flow = flowById(state.selectedFlowId);
+    if (!flow) return;
+    var beforeDelete = modelSnapshot();
+    if (state.selectedNodeId) {
+      flow.nodes = (flow.nodes || []).filter(function (node) { return node.id !== state.selectedNodeId; });
+      flow.edges = (flow.edges || []).filter(function (edge) {
+        return edge.source !== state.selectedNodeId && edge.target !== state.selectedNodeId;
+      });
+      state.selectedNodeId = "";
+      state.selectedEdgeId = "";
+    } else if (state.selectedEdgeId) {
+      flow.edges = (flow.edges || []).filter(function (edge) { return edge.id !== state.selectedEdgeId; });
+      state.selectedEdgeId = "";
+    } else {
+      return;
+    }
+    state.linkSource = null;
+    writeModel();
+    pushHistory(beforeDelete);
+    renderFlow(flow);
+  }
+
+  function addResizeHandle(nodeEl, flow, nodeId, container) {
+    if (nodeEl.querySelector(".aieh-resize-handle")) return;
+    var handle = document.createElement("span");
+    handle.className = "aieh-resize-handle";
+    handle.title = "Drag to scale";
+    nodeEl.appendChild(handle);
+    handle.addEventListener("pointerdown", function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      var node = nodeById(flow, nodeId);
+      if (!node) return;
+      handle.setPointerCapture(event.pointerId);
+      var startX = event.clientX;
+      var startY = event.clientY;
+      var baseWidth = Number(node.width || 140);
+      var baseHeight = Number(node.height || 56);
+      var beforeScale = modelSnapshot();
+      var resizing = false;
+
+      function move(moveEvent) {
+        var dx = moveEvent.clientX - startX;
+        var dy = moveEvent.clientY - startY;
+        var widthFactor = (baseWidth + dx) / baseWidth;
+        var heightFactor = (baseHeight + dy) / baseHeight;
+        var factor = Math.max(widthFactor, heightFactor, 0.35);
+        resizing = true;
+        moveEvent.preventDefault();
+        node.width = Math.max(40, Math.round(baseWidth * factor));
+        node.height = Math.max(24, Math.round(baseHeight * factor));
+        nodeEl.style.width = node.width + "px";
+        nodeEl.style.height = node.height + "px";
+        updateLines(container, flow);
+      }
+
+      function up() {
+        handle.removeEventListener("pointermove", move);
+        handle.removeEventListener("pointerup", up);
+        if (resizing) {
+          writeModel();
+          pushHistory(beforeScale);
+        }
+      }
+
+      handle.addEventListener("pointermove", move);
+      handle.addEventListener("pointerup", up);
+    });
+  }
+
   function renderFlow(flow) {
     var container = document.querySelector(flow.selector);
     if (!container) return;
@@ -264,6 +495,17 @@
 
     container.classList.add("aieh-flow-editor");
     container.innerHTML = "";
+    container.onclick = function (event) {
+      if (event.target !== container) return;
+      state.selectedNodeId = "";
+      state.selectedEdgeId = "";
+      container.querySelectorAll(".is-selected").forEach(function (selected) {
+        selected.classList.remove("is-selected");
+      });
+      container.querySelectorAll(".aieh-resize-handle").forEach(function (handle) {
+        handle.remove();
+      });
+    };
 
     var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("class", "ai-flow-lines aieh-lines");
@@ -283,6 +525,7 @@
       line.setAttribute("x2", b.x);
       line.setAttribute("y2", b.y);
       line.dataset.edgeId = edge.id;
+      if (state.selectedFlowId === flow.id && state.selectedEdgeId === edge.id) line.classList.add("is-selected");
       line.addEventListener("click", function (event) {
         event.stopPropagation();
         if (state.mode === "delete") {
@@ -291,6 +534,8 @@
           writeModel();
           pushHistory(beforeDeleteEdge);
           renderFlow(flow);
+        } else {
+          selectEdge(flow, edge.id, container);
         }
       });
       svg.appendChild(line);
@@ -298,10 +543,10 @@
       label.className = "aieh-edge-label ai-flow-edge-label" + (edge.label ? "" : " is-empty");
       label.dataset.edgeId = edge.id;
       label.textContent = edge.label || "";
-      label.setAttribute("contenteditable", "true");
       label.setAttribute("spellcheck", "true");
       label.style.left = ((a.x + b.x) / 2) + "px";
       label.style.top = ((a.y + b.y) / 2) + "px";
+      if (state.selectedFlowId === flow.id && state.selectedEdgeId === edge.id) label.classList.add("is-selected");
       var edgeEditStartSnapshot = null;
       label.addEventListener("input", function () {
         edge.label = label.textContent;
@@ -320,6 +565,7 @@
         label.classList.add("aieh-editing-inline");
       });
       label.addEventListener("blur", function () {
+        label.removeAttribute("contenteditable");
         label.classList.remove("aieh-editing-inline");
         if (state.activeEditSnapshot === edgeEditStartSnapshot) commitActiveEdit();
         label.classList.toggle("is-empty", !label.textContent);
@@ -332,6 +578,14 @@
       });
       label.addEventListener("click", function (event) {
         event.stopPropagation();
+        selectEdge(flow, edge.id, container);
+      });
+      label.addEventListener("dblclick", function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        selectEdge(flow, edge.id, container);
+        label.setAttribute("contenteditable", "true");
+        label.focus();
       });
       container.appendChild(label);
     });
@@ -340,35 +594,41 @@
       var el = document.createElement("div");
       el.className = "aieh-node ai-flow-node ai-flow-node-" + safeClass(node.type);
       el.dataset.nodeId = node.id;
-      el.textContent = node.label || node.id;
-      el.setAttribute("contenteditable", "true");
       el.setAttribute("spellcheck", "true");
       el.style.left = Number(node.x || 0) + "px";
       el.style.top = Number(node.y || 0) + "px";
       el.style.width = Number(node.width || 140) + "px";
       el.style.height = Number(node.height || 56) + "px";
+      var label = document.createElement("span");
+      label.className = "aieh-node-label";
+      label.textContent = node.label || node.id;
+      el.appendChild(label);
       if (state.linkSource === node.id) el.classList.add("is-link-source");
-      if (state.selectedFlowId === flow.id && state.selectedNodeId === node.id) el.classList.add("is-selected");
+      if (state.selectedFlowId === flow.id && state.selectedNodeId === node.id) {
+        el.classList.add("is-selected");
+        addResizeHandle(el, flow, node.id, container);
+      }
       var nodeEditStartSnapshot = null;
 
-      el.addEventListener("input", function () {
-        node.label = el.textContent;
+      label.addEventListener("input", function () {
+        node.label = label.textContent;
         writeModel();
         updateHistoryButtons();
       });
 
-      el.addEventListener("focus", function () {
+      label.addEventListener("focus", function () {
         nodeEditStartSnapshot = modelSnapshot();
         state.activeEditSnapshot = nodeEditStartSnapshot;
         state.activeEditCommit = function () {
-          node.label = el.textContent;
+          node.label = label.textContent;
           writeModel();
         };
-        el.classList.add("aieh-editing-inline");
+        label.classList.add("aieh-editing-inline");
       });
 
-      el.addEventListener("blur", function () {
-        el.classList.remove("aieh-editing-inline");
+      label.addEventListener("blur", function () {
+        label.removeAttribute("contenteditable");
+        label.classList.remove("aieh-editing-inline");
         if (state.activeEditSnapshot === nodeEditStartSnapshot) commitActiveEdit();
         pushHistory(nodeEditStartSnapshot);
         if (state.activeEditSnapshot === nodeEditStartSnapshot) {
@@ -380,29 +640,31 @@
 
       el.addEventListener("click", function (event) {
         event.stopPropagation();
-        state.selectedFlowId = flow.id;
-        state.selectedNodeId = node.id;
         if (state.mode === "edge") {
           handleEdgeClick(flow, node.id);
         } else if (state.mode === "delete") {
-          var beforeDelete = modelSnapshot();
-          flow.nodes = nodes.filter(function (candidate) { return candidate.id !== node.id; });
-          flow.edges = edges.filter(function (edge) { return edge.source !== node.id && edge.target !== node.id; });
-          state.linkSource = null;
-          state.selectedNodeId = "";
-          writeModel();
-          pushHistory(beforeDelete);
-          renderFlow(flow);
+          state.selectedFlowId = flow.id;
+          state.selectedNodeId = node.id;
+          state.selectedEdgeId = "";
+          removeSelectedItem();
         } else {
-          container.querySelectorAll(".aieh-node.is-selected").forEach(function (selected) {
-            selected.classList.remove("is-selected");
-          });
-          el.classList.add("is-selected");
+          selectNode(flow, node.id, container);
         }
+      });
+
+      el.addEventListener("dblclick", function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        selectNode(flow, node.id, container);
+        label.setAttribute("contenteditable", "true");
+        label.focus();
       });
 
       el.addEventListener("pointerdown", function (event) {
         if (state.mode !== "select") return;
+        if (event.target && event.target.closest && event.target.closest(".aieh-resize-handle")) return;
+        if (label.getAttribute("contenteditable") === "true") return;
+        selectNode(flow, node.id, container);
         el.setPointerCapture(event.pointerId);
         var startX = event.clientX;
         var startY = event.clientY;
@@ -530,6 +792,7 @@
   }
 
   function downloadHtml() {
+    commitActiveEdit();
     writeModel();
     var html = "<!doctype html>\n" + document.documentElement.outerHTML;
     var blob = new Blob([html], { type: "text/html;charset=utf-8" });
@@ -549,6 +812,27 @@
       button.classList.toggle("is-active", button.dataset.mode === mode);
     });
     renderAllFlows();
+  }
+
+  function exitEditing() {
+    if (!state.editing) return;
+    commitActiveEdit();
+    writeModel();
+    state.editing = false;
+    state.mode = "select";
+    state.linkSource = null;
+    state.selectedNodeId = "";
+    state.selectedEdgeId = "";
+    state.activeEditSnapshot = null;
+    state.activeEditCommit = null;
+    stopTextEditing();
+    applyTextBlocksToDom();
+    renderReadOnlyFlows();
+    document.querySelectorAll(".aieh-toolbar").forEach(function (toolbar) {
+      toolbar.remove();
+    });
+    buildEditLauncher();
+    toast("Read-only mode");
   }
 
   function buildToolbar() {
@@ -652,6 +936,12 @@
     save.addEventListener("click", downloadHtml);
     toolbar.appendChild(save);
 
+    var exit = document.createElement("button");
+    exit.textContent = "Exit edit";
+    exit.title = "Return to read-only mode";
+    exit.addEventListener("click", exitEditing);
+    toolbar.appendChild(exit);
+
     document.documentElement.appendChild(toolbar);
     setMode("select");
     updateHistoryButtons();
@@ -663,6 +953,12 @@
     document.addEventListener("keydown", function (event) {
       if (!state.editing) return;
       var key = String(event.key || "").toLowerCase();
+      if ((key === "delete" || key === "backspace") && !(event.ctrlKey || event.metaKey || event.altKey)) {
+        if (event.target && event.target.closest && event.target.closest("[contenteditable='true']")) return;
+        event.preventDefault();
+        removeSelectedItem();
+        return;
+      }
       if (!(event.ctrlKey || event.metaKey) || event.altKey) return;
       if (event.target && event.target.closest && event.target.closest("[contenteditable='true']")) return;
       if (key === "z" && !event.shiftKey) {
@@ -676,6 +972,7 @@
   }
 
   function buildEditLauncher() {
+    if (document.querySelector(".aieh-edit-launcher")) return;
     var button = document.createElement("button");
     button.type = "button";
     button.className = "aieh-edit-launcher";
@@ -701,5 +998,9 @@
 
   parseModel();
   if (!state.model) return;
+  if (state.loadedSnapshot) {
+    applyTextBlocksToDom();
+    renderReadOnlyFlows();
+  }
   buildEditLauncher();
 })();
